@@ -34,23 +34,10 @@ services:
       - ./db-data/postgres/:/var/lib/postgresql/data/
       - ./db-init:/docker-entrypoint-initdb.d/
  
-  # embedding-service:
-  #   build:
-  #     context: ./../embedding-service 
-  #     dockerfile:  ./../embedding-service/embedding-service.dockerfile
-  #   restart: always
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     MODEL_NAME: "all-MiniLM-L6-v2"
-  #   depends_on:
-  #     - postgres
-
   embedding-service:
-    image: my-app
+    build:
+      context: ./../embedding-service 
+      dockerfile:  ./../embedding-service/embedding-service.dockerfile
     restart: always
     deploy:
       mode: replicated

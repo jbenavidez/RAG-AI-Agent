@@ -1,42 +1,40 @@
+# grpc_server.py
+
 import grpc
 from concurrent import futures
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
-from proto.generated import embedding_pb2, embedding_pb2_grpc
+import embedding_pb2, embedding_pb2_grpc
 
-# Load the model once
-model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Load Model for embedding 
+model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
 
 
 class EmbeddingService(embedding_pb2_grpc.EmbeddingServiceServicer):
 
     def TextToEmbedding(self, request, context):
-        
         text = request.text
-        print("the text is", text)
-        embeddings = model.encode([text], normalize_embeddings=True).tolist()
+        
+        print("Valinor is calling", text)
 
-        response_text = str(embeddings)
+        vectors = model.encode([text], normalize_embeddings=True)
+        embeddings = vectors.tolist() if hasattr(vectors, "tolist") else vectors
 
-        return embedding_pb2.EmbeddingsMessageResponse(text=response_text)
-
-
-class GRPCServer:
-
-    @classmethod
-    def start_server(cls):
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        embedding_pb2_grpc.add_EmbeddingServiceServicer_to_server(
-            EmbeddingService(), server
+        return embedding_pb2.EmbeddingsMessageResponse(
+            text=str(embeddings)
         )
 
-        # Listen on port 50051
-        server.add_insecure_port("[::]:50051")
-        server.start()
-        print("gRPC server running on port 50051")
 
-        # Keep server alive
-        server.wait_for_termination()
+def start_grpc_server():
+    """Start the gRPC server on port 50051."""
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    embedding_pb2_grpc.add_EmbeddingServiceServicer_to_server(
+        EmbeddingService(), server
+    )
 
+    server.add_insecure_port("[::]:50051")
+    server.start()
+    print("gRPC server running on port 50051")
 
- 
+    server.wait_for_termination()
