@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "./"; 
+
+
+
+message EmbeddingsMessageRequest{
+    string text = 1; 
+}
+
+message EmbeddingsMessageResponse{
+    string text = 2;
+
+}
+
+service EmbeddingService {
+
+    rpc   TextToEmbedding(EmbeddingsMessageRequest) returns (EmbeddingsMessageResponse);
+}
