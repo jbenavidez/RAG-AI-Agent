@@ -5,6 +5,13 @@ import (
 	"context"
 )
 
+var app *Config
+
+// NewGrpcHelper make app config avaible
+func NewGrpcHelper(a *Config) {
+	app = a
+}
+
 type server struct {
 	pb.UnimplementedEmbeddingServiceServer
 }

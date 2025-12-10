@@ -9,6 +9,7 @@ import (
 func (a *Config) routes() http.Handler {
 
 	mux := chi.NewRouter()
+	mux.Post("/test", a.TestEndpoint)
 
 	return mux
 }

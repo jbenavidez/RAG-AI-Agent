@@ -3,8 +3,10 @@ package main
 import (
 	"client/models"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -64,4 +66,14 @@ func (c *Config) LoadData() error {
 		}
 	}
 	return nil
+}
+
+func (app *Config) TestEndpoint(w http.ResponseWriter, r *http.Request) {
+	resp := make(map[string]string)
+	resp["status"] = "ok"
+	resp["message"] = "GONDORR here"
+	//set response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+
 }

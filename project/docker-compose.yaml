@@ -8,7 +8,8 @@ services:
       context: ./../client-service
       dockerfile: ./../client-service/client-service.dockerfile
     restart: always
-
+    ports:
+      - "4000:4000"
     deploy:
       mode: replicated
       replicas: 1

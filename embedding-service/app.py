@@ -1,9 +1,8 @@
- import threading
+import threading
 from flask import Flask, request, jsonify
 
 from fastembed import TextEmbedding
-from grpc_server import start_grpc_serve 
-
+from grpc_server import start_grpc_server 
 
 # Load FastEmbed 
 model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")

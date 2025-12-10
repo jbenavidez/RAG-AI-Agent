@@ -1,6 +1,7 @@
 package main
 
 import (
+	pb "client/proto/generated"
 	"client/repository"
 	dbrepo "client/repository/db_repo"
 	"fmt"
@@ -10,11 +11,12 @@ import (
 
 const (
 	gRpcPort = "50001"
-	port     = 8080
+	port     = 4000
 )
 
 type Config struct {
-	DB repository.DatabaseRepo
+	DB         repository.DatabaseRepo
+	GRPCClient pb.EmbeddingServiceClient
 }
 
 func main() {
@@ -40,8 +42,8 @@ func main() {
 		fmt.Println("valinor_faild", err)
 		panic(err)
 	}
-	// set up Grpc connection
 
+	//
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {
 		log.Fatal(err)

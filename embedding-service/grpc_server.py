@@ -16,7 +16,7 @@ class EmbeddingService(embedding_pb2_grpc.EmbeddingServiceServicer):
     def TextToEmbedding(self, request, context):
         text = request.text
         
-        print("Valinor is calling", text)
+        print("Valinor_is_calling", text)
 
         vectors = model.encode([text], normalize_embeddings=True)
         embeddings = vectors.tolist() if hasattr(vectors, "tolist") else vectors
