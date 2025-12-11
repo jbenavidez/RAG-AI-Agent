@@ -68,6 +68,7 @@ func (m *PostgresDBRepo) InsertDocument(documents []models.Document) error {
 
 	for _, r := range documents {
 		embedding := utils.SimpleEmbedding(r.Text)
+
 		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d)", argPos, argPos+1, argPos+2, argPos+3))
 		valueArgs = append(valueArgs, r.Text, toPGVector(embedding), r.ProjectName, r.Description)
 		argPos += 4

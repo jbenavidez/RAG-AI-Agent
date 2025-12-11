@@ -3,8 +3,10 @@ package main
 import (
 	"client/models"
 	pb "client/proto/generated"
+	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -89,5 +91,23 @@ func (app *Config) TestEndpoint(w http.ResponseWriter, r *http.Request) {
 	//set response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(jsonResponse)
+
+}
+
+func (app *Config) TextToEmbedding(ctx context.Context, text string) ([]float64, error) {
+	// set req for grpc service
+	if len(text) == 0 {
+		return nil, errors.New("text cant be empty")
+	}
+	req := &pb.EmbeddingsMessageRequest{
+		Text: text,
+	}
+	resp, err := app.GRPCClient.TextToEmbedding(ctx, req)
+	if err != nil {
+		fmt.Println("unable to calle GRP", err)
+		return nil, err
+	}
+	_ = resp
+	return nil, nil
 
 }
