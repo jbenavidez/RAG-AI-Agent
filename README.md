@@ -15,6 +15,7 @@ A lightweight RAG-based AI agent that ingests content from the NYC Capital proje
 *   **Database**: Primary storage using PostgreSQL enhanced with the pgvector extension for similarity search and vector operations. This component is fully pluggable and can be replaced with modern vector databases such as Pinecone, Chroma, Weaviate, or Milvus depending on
    performance needs.
 
-### Dataset
+ ## Data source
 The agent’s knowledge comes from  data.cityofnewyork.us, with data currently imported via a CSV file. This ingestion method is fully flexible—CSV loading can easily be replaced with direct API-based retrieval, since data.cityofnewyork.us provides both CSV exports and a public API for accessing article content.
+
 
