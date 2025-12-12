@@ -7,6 +7,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"os"
+
+	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/ollama"
 )
 
 const (
@@ -17,6 +22,7 @@ const (
 type Config struct {
 	DB         repository.DatabaseRepo
 	GRPCClient pb.EmbeddingServiceClient
+	Llm        llms.Model
 }
 
 func main() {
@@ -40,6 +46,15 @@ func main() {
 	if err != nil {
 		fmt.Println("somethings break", err)
 	}
+	fmt.Fprintln(os.Stdout, "init Ollama LLM...........")
+	// Initialize Ollama LLMs
+	llm, err := ollama.New(ollama.WithModel("llama2"))
+	if err != nil {
+		fmt.Println("failed to Initialize Ollama: ", err)
+		panic(err)
+	}
+	fmt.Println("ollama connected")
+	app.Llm = llm
 	log.Println("Starting agent on port", port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {

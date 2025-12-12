@@ -14,23 +14,7 @@ services:
     depends_on:
       - embedding-service
 
-  postgres:
-    image: ramsrib/pgvector:14
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ai_agent
-    logging:
-      options:
-        max-size: 10m
-        max-file: "3"
-    ports:
-      - '5432:5432'
-    volumes:
-      - ./db-data/postgres/:/var/lib/postgresql/data/
-      - ./db-init:/docker-entrypoint-initdb.d/
- 
+
   embedding-service:
     build:
       context: ./../embedding-service
@@ -47,3 +31,34 @@ services:
       - postgres
     volumes:
       - "../embedding-service:/app"
+
+
+  postgres:
+    image: ramsrib/pgvector:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_agent
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+      - ./db-init:/docker-entrypoint-initdb.d/
+
+
+  ollama-service:
+    image: ollama/ollama:latest
+    restart: always
+    ports:
+      - "8080:8080" 
+    environment:
+      OLLAMA_API_KEY: ""   
+    volumes:
+      - ./ollama-data:/ollama-data
+    depends_on:
+      - postgres 

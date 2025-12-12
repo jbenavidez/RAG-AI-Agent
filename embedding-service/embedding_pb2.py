@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x65mbedding.proto\x12\x05proto\"(\n\x18\x45mbeddingsMessageRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\"+\n\x19\x45mbeddingsMessageResponse\x12\x0e\n\x06result\x18\x01 \x03(\x01\x32h\n\x10\x45mbeddingService\x12T\n\x0fTextToEmbedding\x12\x1f.proto.EmbeddingsMessageRequest\x1a .proto.EmbeddingsMessageResponseB\x04Z\x02./b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x65mbedding.proto\x12\x05proto\"(\n\x18\x45mbeddingsMessageRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\"+\n\x19\x45mbeddingsMessageResponse\x12\x0e\n\x06result\x18\x01 \x03(\x02\x32h\n\x10\x45mbeddingService\x12T\n\x0fTextToEmbedding\x12\x1f.proto.EmbeddingsMessageRequest\x1a .proto.EmbeddingsMessageResponseB\x04Z\x02./b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)

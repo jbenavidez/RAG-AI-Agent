@@ -19,7 +19,9 @@ RUN python -m pip install --upgrade pip --no-cache-dir --disable-pip-version-che
 
 # Install Python dependencies
 RUN python -m pip install --no-cache-dir \
-        fastembed==0.6.0 \
+        torch \
+        transformers \
+        sentence-transformers \
         grpcio \
         grpcio-tools \
         protobuf \

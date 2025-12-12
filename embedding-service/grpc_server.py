@@ -1,33 +1,40 @@
 import grpc
 from concurrent import futures
-from fastembed import TextEmbedding
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
 import embedding_pb2, embedding_pb2_grpc
 
-
-model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
+# Load the sentence-transformers model
+model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 
 class EmbeddingService(embedding_pb2_grpc.EmbeddingServiceServicer):
-    """ gRPC service for generating text embeddings."""
+    """ gRPC service for generating text embeddings. """
 
     def TextToEmbedding(self, request, context):
         text = request.text
-        vectors_gen = model.embed([text])
-        vectors_list = list(vectors_gen)
-        embeddings = vectors_list[0]
 
-        # Convert to list for RPC-safe format
-        if hasattr(embeddings, "astype"):
-            embeddings = embeddings.astype("float64")
-            
+        # Generate embeddings
+        embeddings = model.encode(
+            [text],
+            convert_to_numpy=True,
+            normalize_embeddings=False
+        )[0]
+
+
+        embeddings = embeddings.astype(np.float32)
+
+
+        norm = np.linalg.norm(embeddings)
+        if norm > 0:
+            embeddings /= norm
+
         embedding_list = embeddings.tolist()
-        # return a list of float64
+
         return embedding_pb2.EmbeddingsMessageResponse(
             result=embedding_list
         )
-
-
 
 def start_grpc_server():
     """ Starts the gRPC server on port 50001. """

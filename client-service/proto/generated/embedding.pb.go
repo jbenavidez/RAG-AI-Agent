@@ -67,7 +67,7 @@ func (x *EmbeddingsMessageRequest) GetText() string {
 
 type EmbeddingsMessageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        []float64              `protobuf:"fixed64,1,rep,packed,name=result,proto3" json:"result,omitempty"`
+	Result        []float32              `protobuf:"fixed32,1,rep,packed,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,7 +102,7 @@ func (*EmbeddingsMessageResponse) Descriptor() ([]byte, []int) {
 	return file_embedding_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EmbeddingsMessageResponse) GetResult() []float64 {
+func (x *EmbeddingsMessageResponse) GetResult() []float32 {
 	if x != nil {
 		return x.Result
 	}
@@ -117,7 +117,7 @@ const file_embedding_proto_rawDesc = "" +
 	"\x18EmbeddingsMessageRequest\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\"3\n" +
 	"\x19EmbeddingsMessageResponse\x12\x16\n" +
-	"\x06result\x18\x01 \x03(\x01R\x06result2h\n" +
+	"\x06result\x18\x01 \x03(\x02R\x06result2h\n" +
 	"\x10EmbeddingService\x12T\n" +
 	"\x0fTextToEmbedding\x12\x1f.proto.EmbeddingsMessageRequest\x1a .proto.EmbeddingsMessageResponseB\x04Z\x02./b\x06proto3"
 

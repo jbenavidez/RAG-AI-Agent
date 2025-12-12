@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const timeOut = time.Second * 3
+const timeOut = 20 * time.Second
 
 func (c *Config) LoadData() error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
@@ -49,8 +49,8 @@ func (c *Config) LoadData() error {
 	const batchSize = 100
 	var batch []models.Document
 	for _, row := range rows[1:] {
-		projectcName := row[1]
-		description := row[2]
+		projectcName := row[2]
+		description := row[3]
 		text := strings.TrimSpace(fmt.Sprintf("%s — %s", projectcName, description))
 		fmt.Println("gondor", text)
 		embedingText, err := app.TextToEmbedding(ctx, text)
@@ -85,28 +85,37 @@ func (c *Config) LoadData() error {
 }
 
 func (app *Config) TestEndpoint(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
 
 	//set request
+	theText := "Queens Museum of Art"
 	req := &pb.EmbeddingsMessageRequest{
-		Text: "REENWICH STREET RECONSTRUCTION",
+		Text: theText,
 	}
-	resp, err := app.GRPCClient.TextToEmbedding(r.Context(), req)
+	resp, err := app.GRPCClient.TextToEmbedding(ctx, req)
 
 	if err != nil {
 		fmt.Println("unable to calle GRP", err)
 		return
 	}
+	// Get chunks froms db
+	chunks, err := app.DB.GetEmbeddingDocument(resp.Result, 20, theText)
+	if err != nil {
+		fmt.Println("gondor-failed", err)
+	}
+	_ = chunks
 
-	jsonResponse := make(map[string][]float64)
+	jsonResponse := make(map[string][]string)
 
-	jsonResponse["message"] = resp.Result
+	jsonResponse["message"] = chunks
 	//set response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(jsonResponse)
 
 }
 
-func (app *Config) TextToEmbedding(ctx context.Context, text string) ([]float64, error) {
+func (app *Config) TextToEmbedding(ctx context.Context, text string) ([]float32, error) {
 	// set req for grpc service
 	if len(text) == 0 {
 		return nil, errors.New("text cant be empty")
@@ -123,4 +132,10 @@ func (app *Config) TextToEmbedding(ctx context.Context, text string) ([]float64,
 
 	return resp.Result, nil
 
+}
+
+func (app *Config) GenerateAnswer() (string, error) {
+
+	// todo
+	return "", nil
 }
