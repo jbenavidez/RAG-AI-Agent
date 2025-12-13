@@ -81,10 +81,10 @@ services:
       DEFAULT_VECTORIZER_MODULE: "text2vec-openai"
       ENABLE_MODULES: "text2vec-openai"
       OPENAI_EMBEDDING_MODEL: "text-embedding-3-small"
- 
+
       UUID_ALLOW_NON_UUID: "true"
 
-      # 🔑 CRITICAL FIX
+   
       CLUSTER_HOSTNAME: "weaviate"
       CLUSTER_JOIN: ""
  
