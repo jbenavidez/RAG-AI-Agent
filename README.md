@@ -2,17 +2,13 @@
 A lightweight RAG-based AI agent that ingests content from the NYC Capital projects dataset and answers user questions with relevant, context-aware responses grounded in the ingested data.
 
  ## Stack
-*   **Go**:  High-performance backend powering core microservices.
-*   **Python**: processing and embedding generation.
-*   **gRPC**: Fast, type-safe communication between services.
-*   **PostgreSQL + pgvector**: Vector-enabled database for similarity search..
+*   **Go** 
+*   **Weaviate** 
  
 
- ## Micro-services descriptions
-*   **Client-service**:  Service built on Go  responsible for handling Retrieval-Augmented Generation (RAG) operations. It coordinates requests, communicates with the embedding service, and queries the vector database.
-*   **Embending-service**: Service built on Python dedicated to generating vector embeddings. The model is easily replaceable—swap in any embedding provider such as OpenAI, HuggingFace, Nomic, etc., without changing the system architecture.
-*   **Database**: Primary storage using PostgreSQL enhanced with the pgvector extension for similarity search and vector operations. This component is fully pluggable and can be replaced with modern vector databases such as Pinecone, Chroma, Weaviate, or Milvus depending on
-   performance needs.
+ ## Services descriptions
+*   **RAG-service**: A service built in Go responsible for handling Retrieval-Augmented Generation (RAG) operations. It manages incoming requests, communicates with the embedding service, and performs queries to the vector database. The service relies on Weaviate to retrieve relevant embeddings for generating context-aware responses.
+*   **Database**: is used as the vector database for storing and retrieving embeddings efficiently. It leverages the text2vec-openai vectorizer to transform textual data into high-dimensional vectors, enabling semantic search and similarity-based retrieval.
 
  ## Data source
 The agent’s knowledge comes from  data.cityofnewyork.us, with data currently imported via a CSV file. This ingestion method is fully flexible—CSV loading can easily be replaced with direct API-based retrieval, since data.cityofnewyork.us provides both CSV exports and a public API for accessing capital projects content.
