@@ -23,7 +23,7 @@ const (
 
 type AIAgentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	Question      string                 `protobuf:"bytes,1,opt,name=question,proto3" json:"question,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -58,16 +58,16 @@ func (*AIAgentRequest) Descriptor() ([]byte, []int) {
 	return file_ai_agent_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AIAgentRequest) GetText() string {
+func (x *AIAgentRequest) GetQuestion() string {
 	if x != nil {
-		return x.Text
+		return x.Question
 	}
 	return ""
 }
 
 type AIAgentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	Answer        string                 `protobuf:"bytes,1,opt,name=answer,proto3" json:"answer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,9 +102,9 @@ func (*AIAgentResponse) Descriptor() ([]byte, []int) {
 	return file_ai_agent_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *AIAgentResponse) GetText() string {
+func (x *AIAgentResponse) GetAnswer() string {
 	if x != nil {
-		return x.Text
+		return x.Answer
 	}
 	return ""
 }
@@ -113,11 +113,11 @@ var File_ai_agent_proto protoreflect.FileDescriptor
 
 const file_ai_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x0eai_agent.proto\x12\x05proto\"$\n" +
-	"\x0eAIAgentRequest\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"%\n" +
-	"\x0fAIAgentResponse\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text2c\n" +
+	"\x0eai_agent.proto\x12\x05proto\",\n" +
+	"\x0eAIAgentRequest\x12\x1a\n" +
+	"\bquestion\x18\x01 \x01(\tR\bquestion\")\n" +
+	"\x0fAIAgentResponse\x12\x16\n" +
+	"\x06answer\x18\x01 \x01(\tR\x06answer2c\n" +
 	"\x0eAIAgentService\x12Q\n" +
 	" GetAIAgentAnswerFromUserQuestion\x12\x15.proto.AIAgentRequest\x1a\x16.proto.AIAgentResponseB\x04Z\x02./b\x06proto3"
 

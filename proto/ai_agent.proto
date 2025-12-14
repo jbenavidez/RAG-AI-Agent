@@ -1,0 +1,24 @@
+
+syntax = "proto3";
+
+
+package proto;
+
+option go_package = "./"; 
+
+
+message  AIAgentRequest {
+    string question = 1;
+
+}
+
+
+
+message  AIAgentResponse {
+    string answer = 1;
+
+}
+
+service AIAgentService {
+    rpc GetAIAgentAnswerFromUserQuestion(AIAgentRequest) returns (AIAgentResponse);
+    }

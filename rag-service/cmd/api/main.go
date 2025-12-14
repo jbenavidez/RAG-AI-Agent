@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"ragService/repository"
 	dbrepo "ragService/repository/db_repo"
 
@@ -13,7 +12,7 @@ import (
 )
 
 const (
-	port = 4000
+	gRpcPort = "50001"
 )
 
 type RagConfig struct {
@@ -49,10 +48,6 @@ func main() {
 	}
 	fmt.Println("*************  Ollama Connected *************")
 	app.Llm = llm
-	log.Println("Starting agent on port", port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	log.Println("Starting GRPC server on port", gRpcPort)
+	app.gRPCListenAndServe()
 }

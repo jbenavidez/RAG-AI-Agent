@@ -35,7 +35,7 @@ The agent’s knowledge comes from   **data.cityofnewyork.us**, with data curren
 Start all services using Docker Compose:
 
 ```bash
-docker-compose up
+make up_build
 ```
 
 ### 2. Access the CLI(wip)
