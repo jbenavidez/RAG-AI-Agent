@@ -7,8 +7,6 @@ services:
       context: ./../rag-service
       dockerfile: ./../rag-service/rag-service.dockerfile
     restart: always
-    ports:
-      - "4000:4000"
     deploy:
       mode: replicated
       replicas: 1
@@ -51,14 +49,13 @@ services:
       - ./ollama-data:/root/.ollama
     entrypoint: ["/bin/sh", "-c"]
     command: >
-      i=0; 
-      until curl -s http://ollama-service:11434/api/tags >/dev/null || [ $i -ge 30 ]; do
-        i=$((i+1)); sleep 1;
+      i=0;
+      until curl -s http://ollama-service:11434/api/tags >/dev/null || [ $$i -ge 30 ]; do
+        i=$$((i+1)); sleep 1;
       done;
       echo "Pulling llama2...";
       ollama pull llama2;
       echo "llama2 pulled successfully."
-
 
   weaviate:
     image: semitechnologies/weaviate:1.19.0
