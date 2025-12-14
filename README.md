@@ -15,19 +15,6 @@ A lightweight RAG-based AI agent that ingests content from the NYC Capital proje
  ## Data source
 The agent’s knowledge comes from   **data.cityofnewyork.us**, with data currently imported via a CSV file. This ingestion method is fully flexible—CSV loading can easily be replaced with direct API-based retrieval, since  **data.cityofnewyork.us** provides both CSV exports and a public API for accessing the capital projects information.
 
- ## Example
-  ##### The following record is stored in our Weaviate DB
-| Project Name                                     | Description                                                                                     |
-|-------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| REPAIRS & REHAB OF INTERCEPTING SEWERS, MN & BX | Repair and Rehabilitation of Interceptor Sewers at Various Locations in the Boroughs of Manhattan and The Bronx |
-
-##### Example Generated Response
-
-**Question:** List all the boroughs mentioned for interceptor sewer projects.  
-
-**Answer:**  
-1. Manhattan  
-2. The Bronx
 
  ## Setup and Running the Project
 ### 1. Start services
@@ -71,3 +58,20 @@ Which boroughs have interceptor sewer projects?
 ```
 
  Display response( still on progress..)
+
+
+
+
+  ## Notes:
+  ##### The following record is stored in our Weaviate DB
+| Project Name                                     | Description                                                                                     |
+|-------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| REPAIRS & REHAB OF INTERCEPTING SEWERS, MN & BX | Repair and Rehabilitation of Interceptor Sewers at Various Locations in the Boroughs of Manhattan and The Bronx |
+
+##### Example Generated Response
+
+**Question:** List all the boroughs mentioned for interceptor sewer projects.  
+
+**Answer:**  
+1. Manhattan  
+2. The Bronx
