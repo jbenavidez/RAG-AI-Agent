@@ -80,3 +80,50 @@ func (c *Config) GetData() ([]*models.Doc, error) {
 
 	return docs, nil
 }
+
+func (c *Config) DocsToContext(docs []*models.Doc) string {
+	//return tempty string is there are not docs
+	if len(docs) == 0 {
+		return ""
+	}
+	// Build context from relevant chunks
+	context := "Context from documents:\n"
+	for i, doc := range docs {
+		context += fmt.Sprintf(`
+					%d
+					Reported Date  "%s"
+					Project Name: "%s"
+					Description: "%s"
+					Borough : "%s"
+					Managing Agency : "%s"
+					Client Agency : "%s"
+					Current Phase : "%s"
+					Design Start : "%s"
+					Budget Forecast : "%s"
+					Latest Budget Changes : "%s"
+					Total Budget Changes : "%s"
+					Forecast Completion : "%s"
+					Latest Schedule Changes : "%s"
+					Total Schedule Changes : "%s"
+					%s
+					\n\n
+					`,
+			i+1,
+			doc.DateReported,
+			doc.ProjectName,
+			doc.Description,
+			doc.Borough,
+			doc.ManagingAgency,
+			doc.ClientAgency,
+			doc.CurrentPhase,
+			doc.DesignStart,
+			doc.BudgetForecast,
+			doc.LatestBudgetChanges,
+			doc.TotalBudgetChanges,
+			doc.ForecastCompletion,
+			doc.LatestScheduleChanges,
+			doc.TotalScheduleChanges,
+		)
+	}
+	return context
+}
