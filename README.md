@@ -6,6 +6,13 @@ A lightweight RAG-based AI agent that ingests data from the NYC Capital Projects
 *   **Weaviate** 
 *   **GRPC** 
 
+ ## Features
+- **Retrieval-Augmented Generation (RAG)** for accurate, data-grounded responses
+- **Semantic search** powered by vector embeddings
+- **Context-aware responses** generated using **LLaMA 2**
+- **Microservices-based architecture** for modularity and scalability
+- **CLI tool** for testing and interacting with the AI agent
+- **API-first design**, enabling integration beyond the CLI
  ## Micro-Services descriptions
 *   **RAG-service**: A service built in Go responsible for handling Retrieval-Augmented Generation (RAG) operations. It manages incoming requests, communicates with the embedding service, and performs queries to the vector database. The service relies on Weaviate to retrieve relevant embeddings for generating context-aware responses.
 *   **Database**: Is used as the vector database for storing and retrieving embeddings efficiently. It leverages the text2vec-openai vectorizer to transform textual data into high-dimensional vectors, enabling semantic search and similarity-based retrieval.
