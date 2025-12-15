@@ -15,15 +15,18 @@ services:
     depends_on:
       - weaviate
 
-  cli-service:
+  frontend-service:
     build:
       context: ./../cli-service
-      dockerfile:  ./../cli-service/cli-service.dockerfile
+      dockerfile: ./../cli-service/cli-service.dockerfile
     depends_on:
       - rag-service
       - ollama-service
-    stdin_open: true  
-    tty: true 
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+
 
   ollama-service:
     image: ollama/ollama:latest

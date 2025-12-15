@@ -2,6 +2,6 @@ FROM alpine:latest
 
 RUN mkdir /app
 
-COPY CliService /app
-
+WORKDIR /app
+COPY . /app
 CMD [ "/app/CliService"]
