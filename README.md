@@ -1,6 +1,5 @@
 # RAG-AI-Agent(WIP)
-A lightweight **Retrieval-Augmented Generation (RAG)** AI agent that ingests data from the **NYC Capital Projects dataset** and answers user questions with relevant, context-aware responses grounded in the ingested data.
-The agent is designed to operate independently and can be integrated into other applications or services. A **web application** is provided for testing and interaction, allowing users to easily query and validate the agent’s capabilities.
+A lightweight **Retrieval-Augmented Generation (RAG)** AI agent that ingests data from the **NYC Capital Projects dataset** and answers user questions with relevant, context-aware responses grounded in the ingested data.The agent is designed to operate independently and can be integrated into other applications or services. A **web application** is provided as a testing and interaction tool, allowing users to easily query and validate the agent’s capabilities.
 
 
  ## Stack
