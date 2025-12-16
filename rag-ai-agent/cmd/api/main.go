@@ -21,18 +21,20 @@ type RagConfig struct {
 	WDBRepo        repository.DatabaseRepo
 }
 
+var RAGConfig RagConfig
+
 func main() {
-	app := RagConfig{}
+
 	fmt.Println("************* connecting to Weaviate *************")
-	client, err := app.ConnectWeaviateDB()
+	client, err := RAGConfig.ConnectWeaviateDB()
 	if err != nil {
 		fmt.Printf("unable to connected %v", err)
 		panic(err)
 	}
-	app.WDBRepo = &dbrepo.WeaviateDBRepo{DB: client}
-	app.WeaviateClient = client
+	RAGConfig.WDBRepo = &dbrepo.WeaviateDBRepo{DB: client}
+	RAGConfig.WeaviateClient = client
 	fmt.Println("************* Loading Data *************")
-	err = app.LoadDataSet()
+	err = RAGConfig.LoadDataSet()
 	if err != nil {
 		fmt.Println("somethings break", err)
 	}
@@ -47,7 +49,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("*************  Ollama Connected *************")
-	app.Llm = llm
+	RAGConfig.Llm = llm
 	log.Println("Starting GRPC server on port", gRpcPort)
-	app.gRPCListenAndServe()
+	RAGConfig.gRPCListenAndServe()
 }

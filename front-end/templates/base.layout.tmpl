@@ -1,5 +1,4 @@
 {{define "base"}}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +8,7 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-
-   <link href="/static/css/styles.css" rel="stylesheet" />
+ <link href="/static/css/styles.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -39,8 +37,9 @@
     const submitButton = document.getElementById('submit');
     const flashMessage = document.getElementById('flash-message');
 
-    function showFlash(msg, duration = 3000) {
+    function showFlash(msg, duration = 3000, type = 'info') {
       flashMessage.innerText = msg;
+      flashMessage.className = type === 'error' ? 'flash-error' : 'flash-info';
       flashMessage.style.display = 'block';
       setTimeout(() => flashMessage.style.display = 'none', duration);
     }
@@ -96,6 +95,11 @@
         'ai-message'
       );
 
+      // Show "still thinking" flash message if API takes >5 seconds
+      const waitingTimer = setTimeout(() => {
+        showFlash("Still thinking... thanks for your patience!", 4000, 'info');
+      }, 5000);
+
       try {
         const res = await fetch('http://localhost:4000/answer-user-question', {
           method: 'POST',
@@ -103,15 +107,15 @@
           body: JSON.stringify({ question })
         });
 
+        clearTimeout(waitingTimer); // stop waiting flash if response received
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
-
         let answer = 'No answer returned.';
 
         if (json.error) {
-          // Show flash message on error
-          showFlash(json.message || 'An error occurred!');
+          showFlash(json.message || 'An error occurred!', 3000, 'error');
           thinkingContent.innerHTML = 'Error encountered.';
         } else if (json.data?.answer) {
           answer = json.data.answer;
@@ -125,7 +129,8 @@
         }
 
       } catch (err) {
-        showFlash('Network error: ' + err.message);
+        clearTimeout(waitingTimer);
+        showFlash('Network error: ' + err.message, 3000, 'error');
         thinkingContent.innerText = 'Error encountered.';
       } finally {
         questionInput.disabled = false;
@@ -152,5 +157,4 @@
   </script>
 </body>
 </html>
-
 {{end}}

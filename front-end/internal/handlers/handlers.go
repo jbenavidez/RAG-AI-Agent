@@ -45,12 +45,10 @@ func (m *Repository) AnswerUserQuestion(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	//set grpc req
-	// req := &pb.AIAgentRequest{
-	// 	Question: payload.Question,
-	// }
 	req := &pb.AIAgentRequest{
-		Question: "List the project names along with their budget forecast and total budget changes for each interceptor sewer project.",
+		Question: payload.Question,
 	}
+
 	// call grcp
 	response, err := m.App.GRPCClient.GetAIAgentAnswerFromUserQuestion(r.Context(), req)
 

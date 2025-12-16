@@ -34,7 +34,22 @@ func (app *RagConfig) gRPCListenAndServe() {
 
 func (s *server) GetAIAgentAnswerFromUserQuestion(ctx context.Context, request *pb.AIAgentRequest) (*pb.AIAgentResponse, error) {
 	question := request.GetQuestion()
-	// todo:next
+
+	if len(question) == 0 {
+		return &pb.AIAgentResponse{Answer: "plase ask question related to NYC capital project"}, nil
+	}
+	// get data from db
+	result, err := RAGConfig.WDBRepo.GetDocuments(question)
+	if err != nil {
+		fmt.Println("unable to get data", err)
+		return nil, err
+	}
+	// generate response
+	resp, err := RAGConfig.GenerateAnswerFromSlides(ctx, question, result)
+	if err != nil {
+		fmt.Println("unable to get data", err)
+		return nil, err
+	}
 	//return rsponse
-	return &pb.AIAgentResponse{Answer: question}, nil
+	return &pb.AIAgentResponse{Answer: resp}, nil
 }

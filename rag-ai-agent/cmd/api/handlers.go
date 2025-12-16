@@ -16,7 +16,7 @@ func (c *RagConfig) TestEndpoint(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("unable to get data", err)
 		return
 	}
-	// generate resp from slide of codck
+	// generate resp from slide of docs
 	resp, err := c.GenerateAnswerFromSlides(r.Context(), searchQuery, result)
 	if err != nil {
 		fmt.Println("error generate response", err)

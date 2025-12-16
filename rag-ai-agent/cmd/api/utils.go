@@ -123,15 +123,15 @@ func (c *RagConfig) GenerateAnswerFromSlides(ctx context.Context, question strin
 		return "", err
 	}
 
-	// pront required to geneare a answer
+	// prompt required to generate a answer
 	prompt := fmt.Sprintf(
-		"Use only the following slide data to answer the question. "+
-			"Give a concise, professional answer. "+
-			"Number items if there are multiple.\n\n"+
-			"Slides JSON:\n%s\n\nQuestion: %s\nAnswer:",
+		"Answer the user's question concisely, professionally, and in a friendly manner using the project information below. "+
+			"Do NOT mention the data source or any JSON/slides. "+
+			"Number items if there are multiple. "+
+			"Optionally suggest one or two helpful follow-up questions.\n\n"+
+			"Project Data:\n%s\n\nQuestion: %s\nAnswer:",
 		slidesJSON, question,
 	)
-
 	// let llm generate response
 	response, err := c.Llm.GenerateContent(ctx, []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeHuman, prompt),

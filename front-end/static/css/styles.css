@@ -1,4 +1,4 @@
-    body { background-color: #f8f9fa; }
+  body { background-color: #f8f9fa; }
     #chat-container {
       max-width: 700px;
       margin: auto;
@@ -55,10 +55,11 @@
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #dc3545;
       color: #fff;
       padding: 0.5rem 1rem;
       border-radius: 5px;
       display: none;
       z-index: 10;
     }
+    .flash-error { background-color: #dc3545; }  /* red */
+    .flash-info { background-color: #0dcaf0; }   /* light blue */
