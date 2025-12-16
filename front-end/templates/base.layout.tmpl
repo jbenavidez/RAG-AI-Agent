@@ -9,6 +9,7 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
    <link href="/static/css/styles.css" rel="stylesheet" />
 </head>
 
@@ -16,7 +17,9 @@
   <div class="container py-4">
     <h1 class="text-center mb-4">NYC Capital Projects AI Agent</h1>
 
-    <div id="chat-container"></div>
+    <div id="chat-container">
+      <div id="flash-message"></div>
+    </div>
 
     <div id="input-area">
       <textarea id="question" class="form-control" rows="2" placeholder="Type your question..."></textarea>
@@ -34,6 +37,13 @@
     const chatContainer = document.getElementById('chat-container');
     const questionInput = document.getElementById('question');
     const submitButton = document.getElementById('submit');
+    const flashMessage = document.getElementById('flash-message');
+
+    function showFlash(msg, duration = 3000) {
+      flashMessage.innerText = msg;
+      flashMessage.style.display = 'block';
+      setTimeout(() => flashMessage.style.display = 'none', duration);
+    }
 
     function addMessage(text, type, timestamp = null) {
       const row = document.createElement('div');
@@ -41,9 +51,7 @@
 
       const avatar = document.createElement('div');
       avatar.className = `avatar ${type === 'user-message' ? 'user-avatar' : 'ai-avatar'}`;
-      avatar.innerHTML = type === 'user-message'
-        ? '<i class="fas fa-user"></i>'
-        : '<i class="fas fa-robot"></i>';
+      avatar.innerHTML = type === 'user-message' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
 
       const msg = document.createElement('div');
       msg.className = `message ${type}`;
@@ -68,15 +76,15 @@
       }
 
       chatContainer.appendChild(row);
-      chatContainer.scrollTop = chatContainer.scrollHeight; // scroll to latest
-      return content; // returns the content div for updating
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      return content; // for updating text dynamically
     }
 
     async function sendQuestion() {
       const question = questionInput.value.trim();
       if (!question) return;
 
-      // Disable input while waiting
       questionInput.disabled = true;
       submitButton.disabled = true;
 
@@ -100,31 +108,26 @@
         const json = await res.json();
 
         let answer = 'No answer returned.';
-        if (!json.error && json.data?.answer) {
+
+        if (json.error) {
+          // Show flash message on error
+          showFlash(json.message || 'An error occurred!');
+          thinkingContent.innerHTML = 'Error encountered.';
+        } else if (json.data?.answer) {
           answer = json.data.answer;
-        } else if (json.message) {
-          answer = json.message;
+          thinkingContent.innerHTML = '';
+          let i = 0;
+          const interval = setInterval(() => {
+            thinkingContent.innerText = answer.slice(0, i);
+            i++;
+            if (i > answer.length) clearInterval(interval);
+          }, 20);
         }
 
-        // Clear spinner
-        thinkingContent.innerHTML = '';
-
-        // Smooth typing animation
-        let i = 0;
-        const typeWriter = () => {
-          if (i <= answer.length) {
-            thinkingContent.innerText = answer.slice(0, i);
-            chatContainer.scrollTop = chatContainer.scrollHeight; // keep scrolling
-            i++;
-            requestAnimationFrame(typeWriter);
-          }
-        };
-        requestAnimationFrame(typeWriter);
-
       } catch (err) {
-        thinkingContent.innerText = 'Error: ' + err.message;
+        showFlash('Network error: ' + err.message);
+        thinkingContent.innerText = 'Error encountered.';
       } finally {
-        // Re-enable input after response
         questionInput.disabled = false;
         submitButton.disabled = false;
         questionInput.focus();
