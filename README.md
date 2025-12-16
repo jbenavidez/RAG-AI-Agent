@@ -46,6 +46,10 @@ make up_build
 ```bash
 http://localhost:4000
 ```
+After opening the app, the UI looks like the following:
+<img width="1172" height="1088" alt="Screenshot 2025-12-15 at 9 37 49 PM" src="https://github.com/user-attachments/assets/967e7a87-20ae-4b56-8eb7-11967c280f84" />
+
+
 From here, you can:
 
 - Type questions about NYC capital projects in the chat interface.
