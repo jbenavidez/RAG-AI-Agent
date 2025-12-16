@@ -65,7 +65,7 @@ List the project names along with their budget forecast and total budget changes
 ...Here are the project names along with their budget forecast and total budget changes for each interceptor sewer project: ....
 
 **Screenshot:**  
-<img width="978" height="1014" alt="eg1" src="https://github.com/user-attachments/assets/82932ef4-d014-41c1-8f32-652fccd09a5c" />
+ <img width="901" height="1051" alt="eg2" src="https://github.com/user-attachments/assets/6a514bce-9913-4e6a-a678-d8516bdeb706" />
 
 ---
 
@@ -78,6 +78,6 @@ What are the main objectives and expected benefits of the emergency technology i
 The main objective of the emergency technology infrastructure upgrade is to enhance public safety response times by providing faster and more reliable communication systems, improved data analytics, and enhanced situational awareness. This will enable emergency responders to quickly and effectively respond to incidents, saving precious time and lives.....
 
 **Screenshot:**  
- <img width="901" height="1051" alt="eg2" src="https://github.com/user-attachments/assets/6a514bce-9913-4e6a-a678-d8516bdeb706" />
+<img width="978" height="1014" alt="eg1" src="https://github.com/user-attachments/assets/82932ef4-d014-41c1-8f32-652fccd09a5c" />
 
 
