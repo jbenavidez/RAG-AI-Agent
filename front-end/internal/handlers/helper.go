@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"frontend/internal/config"
+	pb "frontend/proto/generated"
 	"log"
 )
 
@@ -60,17 +62,38 @@ func ListenToWsChannel() {
 		case "question":
 
 			//TODO: get response from the agent
-			answer := "random answer for now "
+
+			// Get answer for user question from Agent
+			answer, err := SendQuestionToAgent(e.Payload.Message)
+			if err != nil {
+				fmt.Println("unable to get answer from agent", err)
+				break
+			}
 			// store answer
 			clients[e.Conn] = append(clients[e.Conn], answer)
 			//send response back
 			response.Action = "answer"
 			response.Message = answer
+
 			fmt.Println("gondor about to response", response)
 			BroadcastResponseToConn(e.Conn, response)
 
 		}
 	}
+}
+
+func SendQuestionToAgent(question string) (string, error) {
+	// set grpc req
+	req := &pb.AIAgentRequest{
+		Question: question,
+	}
+	fmt.Println("valinor_question", question)
+	// call grcp
+	response, err := app.GRPCClient.GetAIAgentAnswerFromUserQuestion(context.Background(), req)
+	if err != nil {
+		return "", err
+	}
+	return response.Answer, nil
 }
 
 func BroadcastResponseToConn(conn *WebSocketConnection, response WsJsonResponse) {
