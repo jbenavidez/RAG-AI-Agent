@@ -1,0 +1,49 @@
+{{ define "title" }}Upload File{{ end }}
+
+{{ define "content" }}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="mb-0">Upload Document</h3>
+            </div>
+
+            <div class="card-body">
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Choose a file</label>
+                        <input
+                            class="form-control"
+                            type="file"
+                            id="file"
+                            name="file"
+                            required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (optional)</label>
+                        <textarea
+                            class="form-control"
+                            id="description"
+                            name="description"
+                            rows="3"
+                            placeholder="Enter a short description"></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            Upload
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{{ end }}
+
+{{ template "base" . }}
