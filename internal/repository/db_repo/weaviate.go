@@ -1,11 +1,15 @@
 package dbrepo
 
-import "github.com/weaviate/weaviate-go-client/v5/weaviate"
+import (
+	"github.com/weaviate/weaviate-go-client/v5/weaviate"
+)
 
 type WeaviateDBRepo struct {
 	DB *weaviate.Client
 }
 
-func (m *WeaviateDBRepo) Connection() *weaviate.Client {
-	return m.DB
+func (m *WeaviateDBRepo) GetTotalDocs() (int, error) {
+
+	// TODO: total docs
+	return 0, nil
 }
