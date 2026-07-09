@@ -1,0 +1,52 @@
+# Go build output
+bin/
+dist/
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Local binary names
+RagAgent
+frontEndApp
+go-app-service
+app
+
+# Go workspace/cache
+go.work
+go.work.sum
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker/local data
+weaviate_data/
+ollama-data/
+docker-data/
+
+# Logs
+*.log
+logs/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage
+coverage.out
+coverage.html
+
+# Air/live reload
+.air.toml
