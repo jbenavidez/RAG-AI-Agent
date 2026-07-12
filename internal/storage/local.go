@@ -58,10 +58,8 @@ func (s *LocalStorage) Save(ctx context.Context, file multipart.File, header *mu
 func buildStoredFileName(original string) string {
 	ext := filepath.Ext(original)
 	name := strings.TrimSuffix(original, ext)
-
 	name = strings.ReplaceAll(name, " ", "_")
 	name = strings.ToLower(name)
-
 	timestamp := time.Now().UnixNano()
 
 	return fmt.Sprintf("%d_%s%s", timestamp, name, ext)

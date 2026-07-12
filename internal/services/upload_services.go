@@ -49,7 +49,7 @@ func (s *UploadService) processFileWorker() {
 }
 
 func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.UploadedFile) error {
-	fmt.Println("gondor_ready", uploadedFile)
+	fmt.Println("gondor_ready", uploadedFile.OriginalFileName)
 
 	return nil
 }
