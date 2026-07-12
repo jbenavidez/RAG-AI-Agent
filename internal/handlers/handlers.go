@@ -62,15 +62,11 @@ func (h *RagHandler) ProcessDoc(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	description := r.FormValue("description")
 	//save file with pending status
-	storedfile, err := h.service.SaveUploadedFile(r.Context(), file, header, description)
+	_, err = h.service.SaveUploadedFile(r.Context(), file, header, description)
 	if err != nil {
-		fmt.Println("something break", err)
 		http.Error(w, "unable to save uploaded file", http.StatusInternalServerError)
 		return
 	}
-	// TODO:spin a gorutine to process
-	fmt.Println("the file", storedfile)
-	// render back
 	http.Redirect(w, r, "/docs", http.StatusSeeOther)
 
 }
