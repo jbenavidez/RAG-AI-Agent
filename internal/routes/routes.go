@@ -11,7 +11,7 @@ func SetUpReoutes(ragHandler *handlers.RagHandler) http.Handler {
 
 	mux := chi.NewRouter()
 
-	mux.Get("/", ragHandler.UploadDoc)
-
+	mux.Get("/upload", ragHandler.UploadDoc)
+	mux.Post("/upload", ragHandler.ProcessDoc)
 	return mux
 }

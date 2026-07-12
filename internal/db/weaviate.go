@@ -79,6 +79,43 @@ func NewWeaviateClient() (*weaviate.Client, error) {
 		fmt.Println("class for documents created")
 	}
 
+	// check if uploaded file class exists
+	uploadedFileClassName := "UploadedFile"
+	uploadedFileExists, err := client.Schema().ClassExistenceChecker().
+		WithClassName(uploadedFileClassName).
+		Do(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to check uploaded file class existence: %v", err)
+	}
+
+	if !uploadedFileExists {
+		fmt.Println("creating class for uploaded files")
+
+		uploadedFileClass := &models.Class{
+			Class:       uploadedFileClassName,
+			Description: "Uploaded file metadata with local file path and processing status",
+			Vectorizer:  "none",
+			Properties: []*models.Property{
+				{Name: "originalFileName", DataType: schema.DataTypeText.PropString()},
+				{Name: "storedFileName", DataType: schema.DataTypeText.PropString()},
+				{Name: "filePath", DataType: schema.DataTypeText.PropString()},
+				{Name: "description", DataType: schema.DataTypeText.PropString()},
+				{Name: "contentType", DataType: schema.DataTypeText.PropString()},
+				{Name: "status", DataType: schema.DataTypeText.PropString()},
+				{Name: "size", DataType: schema.DataTypeInt.PropString()},
+				{Name: "createdAt", DataType: schema.DataTypeDate.PropString()},
+				{Name: "updatedAt", DataType: schema.DataTypeDate.PropString()},
+				{Name: "errorMessage", DataType: schema.DataTypeText.PropString()},
+			},
+		}
+
+		if err := client.Schema().ClassCreator().WithClass(uploadedFileClass).Do(ctx); err != nil {
+			return nil, err
+		}
+		fmt.Println("class for uploaded files created")
+	}
+
 	fmt.Println("Weaviate DB is ready")
 	return client, nil
 }

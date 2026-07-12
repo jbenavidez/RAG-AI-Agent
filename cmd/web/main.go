@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"rag/internal/config"
 	"rag/internal/db"
 	"rag/internal/handlers"
@@ -11,6 +12,7 @@ import (
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/routes"
 	"rag/internal/services"
+	"rag/internal/storage"
 )
 
 const (
@@ -30,13 +32,16 @@ func main() {
 	appConfig.TemplateCache = templateCache
 	fmt.Println("starting application on port", portNumber)
 
-	conn, err := db.NewWeaviateClient()
+	weaviateClient, err := db.NewWeaviateClient()
 	if err != nil {
 		panic(err)
 	}
 
 	//wire everything up
-	uploadService := services.NewUploadService(&dbrepo.WeaviateDBRepo{DB: conn})
+	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
+	uploadDir := os.Getenv("UPLOAD_DIR")
+	fileStorage := storage.NewLocalStorage(uploadDir)
+	uploadService := services.NewUploadService(weaviateRepo, fileStorage)
 	renderer := render.NewRenderer(&appConfig)
 	ragHandlers := handlers.NewRagHandler(uploadService, renderer)
 	mux := routes.SetUpReoutes(ragHandlers)

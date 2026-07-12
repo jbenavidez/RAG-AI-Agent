@@ -30,6 +30,9 @@ weaviate_data/
 ollama-data/
 docker-data/
 
+# Local uploaded files
+uploads/
+
 # Logs
 *.log
 logs/
