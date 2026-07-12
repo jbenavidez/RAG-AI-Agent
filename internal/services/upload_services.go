@@ -67,16 +67,24 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.Up
 
 	switch ext {
 	case ".csv":
+		// Mark file as processing
+		uploadedFile.Status = "processing"
+		uploadedFile.ErrorMessage = ""
 		if err := s.csvProcessor.Process(ctx, file, uploadedFile); err != nil {
-			// mark file as failed on db
+			// Mark file as failed on db
 			uploadedFile.Status = "failed"
 			uploadedFile.ErrorMessage = err.Error()
-			err := s.repo.UpdateFile(uploadedFile)
-			if err != nil {
+			if err := s.repo.UpdateFile(uploadedFile); err != nil {
 				return fmt.Errorf("failed to update uploaded file status: %w", err)
 			}
 
 			return fmt.Errorf("failed to process csv file: %w", err)
+		}
+		// Mark file as proccessed
+		uploadedFile.Status = "processed"
+		uploadedFile.ErrorMessage = ""
+		if err := s.repo.UpdateFile(uploadedFile); err != nil {
+			return fmt.Errorf("failed to update uploaded file status: %w", err)
 		}
 
 	default:

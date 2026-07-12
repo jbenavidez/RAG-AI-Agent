@@ -11,4 +11,5 @@ type DatabaseRepo interface {
 	GetAllUploadFiles() ([]models.UploadedFile, error)
 	GetFileByName(fileName string) (*models.UploadedFile, error)
 	UpdateFile(uploadedfile *models.UploadedFile) error
+	InsertDocuments(data []*models.CapitalProject) error
 }

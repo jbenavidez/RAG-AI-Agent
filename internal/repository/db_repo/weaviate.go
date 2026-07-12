@@ -10,11 +10,13 @@ import (
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/filters"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/graphql"
+	mmodels "github.com/weaviate/weaviate/entities/models"
 )
 
 const (
 	timeout                = time.Second * 3
 	UploadedFilesClassName = "UploadedFile"
+	DocumentClassName      = "Document"
 )
 
 type WeaviateDBRepo struct {
@@ -212,7 +214,68 @@ func (m *WeaviateDBRepo) UpdateFile(uploadedFile *models.UploadedFile) error {
 	return nil
 }
 
-// Helpers
+func (m *WeaviateDBRepo) InsertDocuments(docs []*models.CapitalProject) error {
+	const batchSize = 50
+
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	if len(docs) == 0 {
+		return nil
+	}
+
+	batcher := m.DB.Batch().ObjectsBatcher()
+	count := 0
+
+	for i, doc := range docs {
+		if doc == nil {
+			continue
+		}
+
+		obj := &mmodels.Object{
+			Class: DocumentClassName,
+			Properties: map[string]interface{}{
+				"text":                  doc.Text,
+				"dateReported":          doc.DateReported,
+				"projectName":           doc.ProjectName,
+				"description":           doc.Description,
+				"category":              doc.Category,
+				"borough":               doc.Borough,
+				"managingAgency":        doc.ManagingAgency,
+				"clientAgency":          doc.ClientAgency,
+				"currentPhase":          doc.CurrentPhase,
+				"designStart":           doc.DesignStart,
+				"budgetForecast":        doc.BudgetForecast,
+				"latestBudgetChanges":   doc.LatestBudgetChanges,
+				"totalBudgetChanges":    doc.TotalBudgetChanges,
+				"forecastCompletion":    doc.ForecastCompletion,
+				"latestScheduleChanges": doc.LatestScheduleChanges,
+				"totalScheduleChanges":  doc.TotalScheduleChanges,
+			},
+		}
+
+		batcher = batcher.WithObject(obj)
+		count++
+
+		if count >= batchSize || i == len(docs)-1 {
+			_, err := batcher.Do(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to insert document batch: %w", err)
+			}
+
+			fmt.Printf("Inserted %d documents\n", count)
+
+			batcher = m.DB.Batch().ObjectsBatcher()
+			count = 0
+
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	return nil
+}
+
+// HELPERS
 func getGraphQLID(props map[string]interface{}) string {
 	additional, ok := props["_additional"].(map[string]interface{})
 	if !ok {
