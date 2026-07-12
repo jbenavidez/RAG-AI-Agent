@@ -15,4 +15,5 @@ type StoredFile struct {
 	FilePath         string
 	Size             int64
 	ContentType      string
+	Description      string
 }

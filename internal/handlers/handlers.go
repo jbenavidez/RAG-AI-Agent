@@ -29,7 +29,10 @@ func (h *RagHandler) GetAllUploadFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("all the ifles,", files)
-	h.Renderer.Render(w, "all_uploaded_file.html", nil)
+	// data := dto.UploadedFilesPageData{
+	// 	UploadedFiles: nil,
+	// }
+	h.Renderer.Render(w, "all_uploaded_file.html", files)
 
 }
 
@@ -68,6 +71,6 @@ func (h *RagHandler) ProcessDoc(w http.ResponseWriter, r *http.Request) {
 	// TODO:spin a gorutine to process
 	fmt.Println("the file", storedfile)
 	// render back
-	http.Redirect(w, r, "/upload", http.StatusSeeOther)
+	http.Redirect(w, r, "/docs", http.StatusSeeOther)
 
 }

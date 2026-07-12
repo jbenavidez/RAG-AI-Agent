@@ -26,7 +26,7 @@ func NewLocalStorage(uploadDir string) *LocalStorage {
 }
 
 func (s *LocalStorage) Save(ctx context.Context, file multipart.File, header *multipart.FileHeader) (*StoredFile, error) {
-	fmt.Println("************* Saving the file in Weaviate *************")
+	fmt.Println("************* Saving the file locally *************")
 	if err := os.MkdirAll(s.UploadDir, 0755); err != nil {
 		return nil, fmt.Errorf("unable to create upload directory: %w", err)
 	}

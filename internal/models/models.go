@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type TemplateData struct {
 	StringMap map[string]string
 	IntMap    map[string]int
@@ -13,6 +15,16 @@ type JSONResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-type UploadFile struct {
-	ID int64
+type UploadedFile struct {
+	ID               string
+	OriginalFileName string
+	StoredFileName   string
+	FilePath         string
+	Description      string
+	ContentType      string
+	Status           string
+	Size             int64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	ErrorMessage     string
 }

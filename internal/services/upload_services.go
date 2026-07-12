@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"mime/multipart"
 	"rag/internal/dto"
 	dbrepo "rag/internal/repository/db_repo"
@@ -27,20 +26,43 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 	if err != nil {
 		return nil, err
 	}
+	// save failed on db
+	err = s.repo.SaveFileMetaData(storedFile)
+	if err != nil {
+		return nil, err
+	}
+
 	return storedFile, nil
 }
 
 func (s *UploadService) GetAllUploadedFile() (*dto.UploadFileResponse, error) {
-
-	// get dosct
+	// get all uploaded files
 	files, err := s.repo.GetAllUploadFiles()
 	if err != nil {
 		return nil, err
 	}
-	resp := dto.UploadFileResponse{
-		Data: files,
+	/// models to dtos
+	uploadedFiles := make([]dto.UploadedFileDTO, len(files))
+	for i := range files {
+		file := files[i]
+		uploadedFiles[i] = dto.UploadedFileDTO{
+			ID:               file.ID,
+			OriginalFileName: file.OriginalFileName,
+			StoredFileName:   file.StoredFileName,
+			FilePath:         file.FilePath,
+			Description:      file.Description,
+			ContentType:      file.ContentType,
+			Status:           file.Status,
+			Size:             file.Size,
+			CreatedAt:        file.CreatedAt.Format("2006-01-02 15:04"),
+			UpdatedAt:        file.UpdatedAt.Format("2006-01-02 15:04"),
+			ErrorMessage:     file.ErrorMessage,
+		}
 	}
-	fmt.Println("return response", resp)
+	//
+	resp := dto.UploadFileResponse{
+		UploadedFiles: uploadedFiles,
+	}
 
-	return nil, nil
+	return &resp, nil
 }

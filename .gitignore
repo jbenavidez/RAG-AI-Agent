@@ -53,3 +53,11 @@ coverage.html
 
 # Air/live reload
 .air.toml
+
+weaviate_data/
+weaviate_data_backup_*/
+ollama-data/
+docker-data/
+
+# Local uploaded files
+uploads/

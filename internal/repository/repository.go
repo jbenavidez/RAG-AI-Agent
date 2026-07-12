@@ -1,8 +1,12 @@
 package repository
 
-import "rag/internal/models"
+import (
+	"rag/internal/models"
+	"rag/internal/storage"
+)
 
 type DatabaseRepo interface {
+	SaveFileMetaData(storedFile *storage.StoredFile) error
 	GetTotalDocs() (int, error)
-	GetAllUploadFiles() ([]models.UploadFile, error)
+	GetAllUploadFiles() ([]models.UploadedFile, error)
 }
