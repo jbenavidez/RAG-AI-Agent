@@ -55,6 +55,14 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.Up
 }
 
 func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.File, header *multipart.FileHeader, description string) (*storage.StoredFile, error) {
+	// Check if file already exists before saving it locally.
+	_, found, err := s.repo.GetFileByName(header.Filename)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		return nil, fmt.Errorf("file already uploaded")
+	}
 	//save file
 	storedFile, err := s.storage.Save(ctx, file, header)
 	if err != nil {

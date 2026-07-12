@@ -113,12 +113,12 @@ func (m *WeaviateDBRepo) GetTotalDocs() (int, error) {
 	return 0, nil
 }
 
-func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, error) {
+func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	where := filters.Where().
-		WithPath([]string{"storedFileName"}).
+		WithPath([]string{"originalFileName"}).
 		WithOperator(filters.Equal).
 		WithValueString(fileName)
 
@@ -147,22 +147,22 @@ func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, e
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	//cast response into a map
+
 	data, ok := res.Data["Get"].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("invalid weaviate response: missing Get")
+		return nil, false, fmt.Errorf("invalid weaviate response: missing Get")
 	}
 
 	items, ok := data[UploadedFilesClassName].([]interface{})
 	if !ok || len(items) == 0 {
-		return nil, fmt.Errorf("uploaded file not found: %s", fileName)
+		return nil, false, nil
 	}
 
 	props, ok := items[0].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("invalid uploaded file properties")
+		return nil, false, fmt.Errorf("invalid uploaded file properties")
 	}
 
 	uploadedFile := models.UploadedFile{
@@ -179,7 +179,7 @@ func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, e
 		ErrorMessage:     getStringProperty(props, "errorMessage"),
 	}
 
-	return &uploadedFile, nil
+	return &uploadedFile, true, nil
 }
 
 // Helpers
