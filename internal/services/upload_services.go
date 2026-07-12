@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
+	"path/filepath"
 	"rag/internal/dto"
 	"rag/internal/models"
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/storage"
+	"strings"
 	"sync"
 )
 
@@ -49,8 +52,21 @@ func (s *UploadService) processFileWorker() {
 }
 
 func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.UploadedFile) error {
-	fmt.Println("gondor_ready", uploadedFile.OriginalFileName)
+	file, err := os.Open(uploadedFile.FilePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
+	ext := strings.ToLower(filepath.Ext(uploadedFile.FilePath))
+
+	switch ext {
+	case ".csv":
+		fmt.Println("processing CSV file:", uploadedFile.FilePath)
+
+	default:
+		return fmt.Errorf("unsupported file extension: %s", ext)
+	}
 	return nil
 }
 
