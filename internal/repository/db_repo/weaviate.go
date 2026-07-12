@@ -28,7 +28,7 @@ func NewWeaviateDBRepo(db *weaviate.Client) *WeaviateDBRepo {
 	}
 
 }
-func (m *WeaviateDBRepo) SaveFileMetaData(storedFile *storage.StoredFile) error {
+func (m *WeaviateDBRepo) SaveFileMetaData(storedFile *storage.StoredFile) (*models.UploadedFile, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -44,15 +44,30 @@ func (m *WeaviateDBRepo) SaveFileMetaData(storedFile *storage.StoredFile) error 
 		"createdAt":        now,
 		"updatedAt":        now,
 	}
-	_, err := m.DB.Data().Creator().
+	resp, err := m.DB.Data().Creator().
 		WithClassName(UploadedFilesClassName).
 		WithProperties(fileProperties).
 		Do(ctx)
 
 	if err != nil {
-		return fmt.Errorf("failed to save uploaded file metadata in weaviate: %w", err)
+		return nil, fmt.Errorf("failed to save uploaded file metadata in weaviate: %w", err)
 	}
-	return nil
+	// get properties
+	props := resp.Object.Properties.(map[string]interface{})
+	uploadFiled := &models.UploadedFile{
+		ID:               resp.Object.ID.String(),
+		OriginalFileName: getStringProperty(props, "originalFileName"),
+		StoredFileName:   getStringProperty(props, "storedFileName"),
+		FilePath:         getStringProperty(props, "filePath"),
+		Description:      getStringProperty(props, "description"),
+		ContentType:      getStringProperty(props, "contentType"),
+		Status:           getStringProperty(props, "status"),
+		Size:             getInt64Property(props, "size"),
+		CreatedAt:        getTimeProperty(props, "createdAt"),
+		UpdatedAt:        getTimeProperty(props, "updatedAt"),
+		ErrorMessage:     getStringProperty(props, "errorMessage"),
+	}
+	return uploadFiled, nil
 
 }
 func (m *WeaviateDBRepo) GetAllUploadFiles() ([]models.UploadedFile, error) {

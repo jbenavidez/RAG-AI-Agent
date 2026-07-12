@@ -27,11 +27,12 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 		return nil, err
 	}
 	// save failed on db
-	err = s.repo.SaveFileMetaData(storedFile)
+	saveFiled, err := s.repo.SaveFileMetaData(storedFile)
 	if err != nil {
 		return nil, err
 	}
-
+	// Send file to go rutine
+	_ = saveFiled
 	return storedFile, nil
 }
 
