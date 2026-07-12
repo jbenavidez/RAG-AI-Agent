@@ -182,6 +182,36 @@ func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, b
 	return &uploadedFile, true, nil
 }
 
+func (m *WeaviateDBRepo) UpdateFile(uploadedFile *models.UploadedFile) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	fileProperties := map[string]interface{}{
+		"originalFileName": uploadedFile.OriginalFileName,
+		"storedFileName":   uploadedFile.StoredFileName,
+		"filePath":         uploadedFile.FilePath,
+		"description":      uploadedFile.Description,
+		"contentType":      uploadedFile.ContentType,
+		"status":           uploadedFile.Status,
+		"size":             uploadedFile.Size,
+		"updatedAt":        time.Now().UTC().Format(time.RFC3339),
+		"errorMessage":     uploadedFile.ErrorMessage,
+	}
+
+	err := m.DB.Data().Updater().
+		WithMerge().
+		WithID(uploadedFile.ID).
+		WithClassName(UploadedFilesClassName).
+		WithProperties(fileProperties).
+		Do(ctx)
+
+	if err != nil {
+		return fmt.Errorf("failed to update uploaded file: %w", err)
+	}
+
+	return nil
+}
+
 // Helpers
 func getGraphQLID(props map[string]interface{}) string {
 	additional, ok := props["_additional"].(map[string]interface{})

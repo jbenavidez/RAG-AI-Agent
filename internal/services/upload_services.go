@@ -65,7 +65,17 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.Up
 
 	switch ext {
 	case ".csv":
-		fmt.Println("processing CSV file:", uploadedFile.FilePath)
+		if err := s.csvProcessor.Process(ctx, file, uploadedFile); err != nil {
+			// mark file as failed on db
+			uploadedFile.Status = "failed"
+			uploadedFile.ErrorMessage = err.Error()
+			err := s.repo.UpdateFile(uploadedFile)
+			if err != nil {
+				return fmt.Errorf("failed to update uploaded file status: %w", err)
+			}
+
+			return fmt.Errorf("failed to process csv file: %w", err)
+		}
 
 	default:
 		return fmt.Errorf("unsupported file extension: %s", ext)

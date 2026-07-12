@@ -10,4 +10,5 @@ type DatabaseRepo interface {
 	GetTotalDocs() (int, error)
 	GetAllUploadFiles() ([]models.UploadedFile, error)
 	GetFileByName(fileName string) (*models.UploadedFile, error)
+	UpdateFile(uploadedfile *models.UploadedFile) error
 }
