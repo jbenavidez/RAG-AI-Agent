@@ -12,3 +12,7 @@ type JSONResponse struct {
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 }
+
+type UploadFile struct {
+	ID int64
+}

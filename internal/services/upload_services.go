@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"mime/multipart"
+	"rag/internal/dto"
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/storage"
 )
@@ -26,4 +28,19 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 		return nil, err
 	}
 	return storedFile, nil
+}
+
+func (s *UploadService) GetAllfile() (*dto.UploadFileResponse, error) {
+
+	// get dosct
+	files, err := s.repo.GetAllUploadFiles()
+	if err != nil {
+		return nil, err
+	}
+	resp := dto.UploadFileResponse{
+		Data: files,
+	}
+	fmt.Println("return response", resp)
+
+	return nil, nil
 }
