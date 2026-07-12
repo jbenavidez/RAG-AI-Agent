@@ -43,15 +43,17 @@ func main() {
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storage.NewLocalStorage(uploadDir)
 	uploadService := services.NewUploadService(weaviateRepo, fileStorage, chunksize)
+	defer uploadService.StopWorker()
 	renderer := render.NewRenderer(&appConfig)
 	ragHandlers := handlers.NewRagHandler(uploadService, renderer)
 	mux := routes.SetUpReoutes(ragHandlers)
 
 	// init server
+	fmt.Println("server up and running")
+
 	err = http.ListenAndServe(fmt.Sprintf(":%s", portNumber), mux)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("server up and running")
 }
