@@ -30,7 +30,7 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 	return storedFile, nil
 }
 
-func (s *UploadService) GetAllfile() (*dto.UploadFileResponse, error) {
+func (s *UploadService) GetAllUploadedFile() (*dto.UploadFileResponse, error) {
 
 	// get dosct
 	files, err := s.repo.GetAllUploadFiles()

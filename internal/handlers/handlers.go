@@ -23,13 +23,13 @@ func NewRagHandler(s *services.UploadService, r *render.Renderer) *RagHandler {
 func (h *RagHandler) GetAllUploadFiles(w http.ResponseWriter, r *http.Request) {
 
 	//get all files
-	files, err := h.service.GetAllfile()
+	files, err := h.service.GetAllUploadedFile()
 	if err != nil {
 		http.Error(w, "unable to retrieve all uploaded files", http.StatusBadRequest)
 		return
 	}
 	fmt.Println("all the ifles,", files)
-	h.Renderer.Render(w, "upload.html", nil)
+	h.Renderer.Render(w, "all_uploaded_file.html", nil)
 
 }
 
