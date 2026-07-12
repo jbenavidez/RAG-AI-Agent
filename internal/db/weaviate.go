@@ -49,7 +49,7 @@ func NewWeaviateClient() (*weaviate.Client, error) {
 	// Check one last time
 	_, err = client.Schema().Getter().Do(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Weaviate not ready after retries: %w", err)
+		return nil, fmt.Errorf("weaviate not ready after retries: %w", err)
 	}
 
 	// check is class exist

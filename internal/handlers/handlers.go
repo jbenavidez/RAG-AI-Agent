@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"rag/internal/render"
 	"rag/internal/services"
@@ -28,18 +27,19 @@ func (h *RagHandler) GetAllUploadFiles(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unable to retrieve all uploaded files", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("all the ifles,", files)
-	// data := dto.UploadedFilesPageData{
-	// 	UploadedFiles: nil,
-	// }
-	h.Renderer.Render(w, "all_uploaded_file.html", files)
+	if err := h.Renderer.Render(w, "all_uploaded_file.html", files); err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		return
+	}
 
 }
 
 func (h *RagHandler) UploadDoc(w http.ResponseWriter, r *http.Request) {
 
-	h.Renderer.Render(w, "upload.html", nil)
-
+	if err := h.Renderer.Render(w, "upload.html", nil); err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *RagHandler) ProcessDoc(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,9 @@ func (h *RagHandler) ProcessDoc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing uploaded file", http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	description := r.FormValue("description")
 	//save file with pending status
 	_, err = h.service.SaveUploadedFile(r.Context(), file, header, description)

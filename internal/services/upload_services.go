@@ -59,7 +59,9 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.Up
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	ext := strings.ToLower(filepath.Ext(uploadedFile.FilePath))
 

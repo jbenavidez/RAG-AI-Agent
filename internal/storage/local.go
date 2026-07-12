@@ -39,7 +39,10 @@ func (s *LocalStorage) Save(ctx context.Context, file multipart.File, header *mu
 	if err != nil {
 		return nil, fmt.Errorf("unable to create local file: %w", err)
 	}
-	defer dst.Close()
+
+	defer func() {
+		_ = dst.Close()
+	}()
 
 	size, err := io.Copy(dst, file)
 	if err != nil {
