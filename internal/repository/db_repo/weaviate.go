@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"
+	"github.com/weaviate/weaviate-go-client/v5/weaviate/filters"
+	"github.com/weaviate/weaviate-go-client/v5/weaviate/graphql"
 )
 
 const (
@@ -94,6 +96,85 @@ func (m *WeaviateDBRepo) GetTotalDocs() (int, error) {
 
 	// TODO: total docs
 	return 0, nil
+}
+
+func (m *WeaviateDBRepo) GetFileByName(fileName string) (*models.UploadedFile, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	where := filters.Where().
+		WithPath([]string{"storedFileName"}).
+		WithOperator(filters.Equal).
+		WithValueString(fileName)
+
+	res, err := m.DB.GraphQL().Get().
+		WithClassName(UploadedFilesClassName).
+		WithFields(
+			graphql.Field{Name: "originalFileName"},
+			graphql.Field{Name: "storedFileName"},
+			graphql.Field{Name: "filePath"},
+			graphql.Field{Name: "description"},
+			graphql.Field{Name: "contentType"},
+			graphql.Field{Name: "status"},
+			graphql.Field{Name: "size"},
+			graphql.Field{Name: "createdAt"},
+			graphql.Field{Name: "updatedAt"},
+			graphql.Field{Name: "errorMessage"},
+			graphql.Field{
+				Name: "_additional",
+				Fields: []graphql.Field{
+					{Name: "id"},
+				},
+			},
+		).
+		WithWhere(where).
+		WithLimit(1).
+		Do(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	//cast response into a map
+	data, ok := res.Data["Get"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid weaviate response: missing Get")
+	}
+
+	items, ok := data[UploadedFilesClassName].([]interface{})
+	if !ok || len(items) == 0 {
+		return nil, fmt.Errorf("uploaded file not found: %s", fileName)
+	}
+
+	props, ok := items[0].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid uploaded file properties")
+	}
+
+	uploadedFile := models.UploadedFile{
+		ID:               getGraphQLID(props),
+		OriginalFileName: getStringProperty(props, "originalFileName"),
+		StoredFileName:   getStringProperty(props, "storedFileName"),
+		FilePath:         getStringProperty(props, "filePath"),
+		Description:      getStringProperty(props, "description"),
+		ContentType:      getStringProperty(props, "contentType"),
+		Status:           getStringProperty(props, "status"),
+		Size:             getInt64Property(props, "size"),
+		CreatedAt:        getTimeProperty(props, "createdAt"),
+		UpdatedAt:        getTimeProperty(props, "updatedAt"),
+		ErrorMessage:     getStringProperty(props, "errorMessage"),
+	}
+
+	return &uploadedFile, nil
+}
+
+// Helpers
+func getGraphQLID(props map[string]interface{}) string {
+	additional, ok := props["_additional"].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	return getStringProperty(additional, "id")
 }
 
 func getStringProperty(props map[string]interface{}, key string) string {
