@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"rag/internal/dto"
 	"rag/internal/models"
+	"rag/internal/processors"
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/storage"
 	"strings"
@@ -15,17 +16,19 @@ import (
 )
 
 type UploadService struct {
-	repo    *dbrepo.WeaviateDBRepo
-	storage storage.FileStorage
-	ch      chan *models.UploadedFile
-	wg      sync.WaitGroup
+	repo         *dbrepo.WeaviateDBRepo
+	storage      storage.FileStorage
+	ch           chan *models.UploadedFile
+	wg           sync.WaitGroup
+	csvProcessor *processors.CSVProcessor
 }
 
-func NewUploadService(r *dbrepo.WeaviateDBRepo, s storage.FileStorage) *UploadService {
+func NewUploadService(r *dbrepo.WeaviateDBRepo, s storage.FileStorage, chunkSize int) *UploadService {
 	services := &UploadService{
-		repo:    r,
-		storage: s,
-		ch:      make(chan *models.UploadedFile),
+		repo:         r,
+		storage:      s,
+		ch:           make(chan *models.UploadedFile),
+		csvProcessor: processors.NewCSVProcessor(r, chunkSize),
 	}
 	services.StartWorker()
 	return services

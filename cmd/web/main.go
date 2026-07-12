@@ -17,6 +17,7 @@ import (
 
 const (
 	portNumber = "8080"
+	chunksize  = 1000
 )
 
 func main() {
@@ -41,7 +42,7 @@ func main() {
 	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storage.NewLocalStorage(uploadDir)
-	uploadService := services.NewUploadService(weaviateRepo, fileStorage)
+	uploadService := services.NewUploadService(weaviateRepo, fileStorage, chunksize)
 	renderer := render.NewRenderer(&appConfig)
 	ragHandlers := handlers.NewRagHandler(uploadService, renderer)
 	mux := routes.SetUpReoutes(ragHandlers)
