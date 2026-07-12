@@ -1,4 +1,4 @@
-APP_NAME=new-rag-go-app-service
+APP_NAME=rag-service
 APP_CMD=./cmd/web
 
 .PHONY: up up_build down build logs clean restart shell lint lint_fix

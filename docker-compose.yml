@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         APP_CMD: ${APP_CMD:-./cmd/web}
-    container_name: new-rag-go-app-service
+    container_name: rag-service
     restart: always
     ports:
       - "${APP_PORT:-8080}:8080"
