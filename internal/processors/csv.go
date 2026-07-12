@@ -63,8 +63,6 @@ func (p *CSVProcessor) Process(ctx context.Context, file *os.File, uploadedFile 
 	if err := p.repo.InsertDocuments(capitalProjects); err != nil {
 		return err
 	}
-
-	fmt.Println("valinor", capitalProjects[0])
-
+	fmt.Println("******** FIle Proceesed ********")
 	return nil
 }
