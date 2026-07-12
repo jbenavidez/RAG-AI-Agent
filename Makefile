@@ -1,7 +1,7 @@
 APP_NAME=new-rag-go-app-service
 APP_CMD=./cmd/web
 
-.PHONY: up up_build down build logs clean restart shell
+.PHONY: up up_build down build logs clean restart shell lint lint_fix
 
 up:
 	@echo "Starting Docker services..."
@@ -31,6 +31,10 @@ logs:
 
 shell:
 	docker exec -it ${APP_NAME} sh
+
+lint:
+	@echo "Running golangci-lint..."
+	golangci-lint run ./...
 
 clean:
 	@echo "Removing containers and volumes..."
