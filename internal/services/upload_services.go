@@ -2,22 +2,56 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"mime/multipart"
 	"rag/internal/dto"
+	"rag/internal/models"
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/storage"
+	"sync"
 )
 
 type UploadService struct {
 	repo    *dbrepo.WeaviateDBRepo
 	storage storage.FileStorage
+	ch      chan *models.UploadedFile
+	wg      sync.WaitGroup
 }
 
 func NewUploadService(r *dbrepo.WeaviateDBRepo, s storage.FileStorage) *UploadService {
-	return &UploadService{
+	services := &UploadService{
 		repo:    r,
 		storage: s,
+		ch:      make(chan *models.UploadedFile),
 	}
+	services.StartWorker()
+	return services
+}
+
+func (s *UploadService) StartWorker() {
+	s.wg.Add(1)
+	//spin go rutine
+	go s.processFileWorker()
+}
+
+// processFileWorker processs uploaded file
+func (s *UploadService) processFileWorker() {
+	defer s.wg.Done()
+	// wait for uploaded files to be added to the channel.
+	for uploadedFile := range s.ch {
+		if uploadedFile == nil {
+			continue
+		}
+		if err := s.ProcessFile(context.Background(), uploadedFile); err != nil {
+			fmt.Println("failed to process file:", err)
+		}
+	}
+}
+
+func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.UploadedFile) error {
+	fmt.Println("gondor_ready", uploadedFile)
+
+	return nil
 }
 
 func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.File, header *multipart.FileHeader, description string) (*storage.StoredFile, error) {
@@ -31,9 +65,15 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 	if err != nil {
 		return nil, err
 	}
-	// Send file to go rutine
-	_ = saveFiled
+	// send saved-file to chan
+	s.ch <- saveFiled
+
 	return storedFile, nil
+}
+
+func (s *UploadService) StopWorker() {
+	close(s.ch)
+	s.wg.Wait()
 }
 
 func (s *UploadService) GetAllUploadedFile() (*dto.UploadFileResponse, error) {
