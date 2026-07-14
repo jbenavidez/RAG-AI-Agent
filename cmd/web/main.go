@@ -47,14 +47,15 @@ func main() {
 	}
 	//wire everything up
 	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
-	rag := rag.NewRag(llm)
+	ragEngine := rag.NewRag(llm)
+	ragService := services.NewRagService(ragEngine, weaviateRepo)
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storage.NewLocalStorage(uploadDir)
 	uploadService := services.NewUploadService(weaviateRepo, fileStorage, chunksize)
 	defer uploadService.StopWorker()
 	renderer := render.NewRenderer(&appConfig)
-	ragHandlers := handlers.NewRagHandler(uploadService, renderer)
-	mux := routes.SetUpReoutes(ragHandlers)
+	handlers := handlers.NewHandlers(uploadService, ragService, renderer)
+	mux := routes.SetUpReoutes(handlers)
 
 	// init server
 	fmt.Println("server up and running")

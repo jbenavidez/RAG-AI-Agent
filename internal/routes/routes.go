@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func SetUpReoutes(ragHandler *handlers.RagHandler) http.Handler {
+func SetUpReoutes(ragHandler *handlers.Handlers) http.Handler {
 
 	mux := chi.NewRouter()
 	mux.Get("/docs", ragHandler.GetAllUploadFiles)
