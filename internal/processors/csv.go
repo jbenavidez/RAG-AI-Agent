@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"os"
 	"rag/internal/models"
-	dbrepo "rag/internal/repository/db_repo"
+	"rag/internal/repository"
 	"strings"
 )
 
 type CSVProcessor struct {
-	repo      *dbrepo.WeaviateDBRepo
+	repo      repository.DatabaseRepo
 	chunkSize int
 }
 
-func NewCSVProcessor(repo *dbrepo.WeaviateDBRepo, chunkSize int) *CSVProcessor {
+func NewCSVProcessor(repo repository.DatabaseRepo, chunkSize int) *CSVProcessor {
 	return &CSVProcessor{
 		repo:      repo,
 		chunkSize: chunkSize,
