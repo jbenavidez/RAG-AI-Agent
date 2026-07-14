@@ -40,7 +40,6 @@ func main() {
 		panic(err)
 	}
 	// init Ollama
-	fmt.Println("*************  Init Ollama *************")
 	llm, err := llm.NewOllamaClient()
 	if err != nil {
 		panic(err)
