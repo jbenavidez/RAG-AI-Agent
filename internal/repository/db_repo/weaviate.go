@@ -254,7 +254,7 @@ func (m *WeaviateDBRepo) InsertDocuments(docs []*models.CapitalProject) error {
 			},
 		}
 
-		batcher = batcher.WithObject(obj)
+		batcher = batcher.WithObjects(obj)
 		count++
 
 		if count >= batchSize || i == len(docs)-1 {
