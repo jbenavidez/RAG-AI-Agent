@@ -8,6 +8,8 @@ import (
 	"rag/internal/config"
 	"rag/internal/db"
 	"rag/internal/handlers"
+	"rag/internal/llm"
+	"rag/internal/rag"
 	"rag/internal/render"
 	dbrepo "rag/internal/repository/db_repo"
 	"rag/internal/routes"
@@ -37,9 +39,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	// init Ollama
+	fmt.Println("*************  Init Ollama *************")
+	llm, err := llm.NewOllamaClient()
+	if err != nil {
+		panic(err)
+	}
 	//wire everything up
 	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
+	rag := rag.NewRag(llm)
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storage.NewLocalStorage(uploadDir)
 	uploadService := services.NewUploadService(weaviateRepo, fileStorage, chunksize)

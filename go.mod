@@ -4,6 +4,7 @@ go 1.26.4
 
 require (
 	github.com/go-chi/chi/v5 v5.3.1
+	github.com/tmc/langchaingo v0.1.14
 	github.com/weaviate/weaviate v1.37.2
 	github.com/weaviate/weaviate-go-client/v5 v5.7.3
 )
@@ -11,6 +12,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.24.1 // indirect
@@ -38,6 +40,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
