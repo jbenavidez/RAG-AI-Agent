@@ -21,6 +21,13 @@ func New(uploadService *services.UploadService, ragService *services.RagService,
 	}
 }
 
+func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
+	if err := h.Renderer.Render(w, "home.html", nil); err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *Handlers) GetAllUploadFiles(w http.ResponseWriter, r *http.Request) {
 	files, err := h.uploadService.GetAllUploadedFile()
 	if err != nil {

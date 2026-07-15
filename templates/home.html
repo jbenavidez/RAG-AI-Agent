@@ -1,0 +1,174 @@
+{{define "content"}}
+
+<div class="container py-4">
+  <h1 class="text-center mb-4">NYC Capital Projects AI Agent</h1>
+
+  <div id="chat-container">
+    <div id="flash-message"></div>
+  </div>
+
+  <div id="input-area">
+    <textarea
+      id="question"
+      class="form-control"
+      rows="2"
+      placeholder="Type your question..."
+    ></textarea>
+
+    <button id="submit" class="btn btn-primary">Send</button>
+  </div>
+
+  <div class="text-center text-muted">
+    ⚡ Note: Since the AI agent runs locally, responses may take a few seconds.
+  </div>
+</div>
+
+<script>
+  const chatContainer = document.getElementById('chat-container');
+  const questionInput = document.getElementById('question');
+  const submitButton = document.getElementById('submit');
+  const flashMessage = document.getElementById('flash-message');
+
+  function showFlash(msg, duration = 3000, type = 'info') {
+    flashMessage.innerText = msg;
+    flashMessage.className = type === 'error' ? 'flash-error' : 'flash-info';
+    flashMessage.style.display = 'block';
+
+    setTimeout(() => {
+      flashMessage.style.display = 'none';
+    }, duration);
+  }
+
+  function addMessage(text, type, timestamp = null) {
+    const row = document.createElement('div');
+    row.className = `chat-row ${type === 'user-message' ? 'user' : ''}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${type === 'user-message' ? 'user-avatar' : 'ai-avatar'}`;
+    avatar.innerHTML = type === 'user-message'
+      ? '<i class="fas fa-user"></i>'
+      : '<i class="fas fa-robot"></i>';
+
+    const msg = document.createElement('div');
+    msg.className = `message ${type}`;
+
+    const content = document.createElement('div');
+    content.className = 'content';
+    content.innerHTML = text;
+
+    const ts = document.createElement('div');
+    ts.className = 'timestamp';
+    ts.innerText = timestamp || new Date().toLocaleTimeString();
+
+    msg.appendChild(content);
+    msg.appendChild(ts);
+
+    if (type === 'user-message') {
+      row.appendChild(msg);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(msg);
+    }
+
+    chatContainer.appendChild(row);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    return content;
+  }
+
+  async function sendQuestion() {
+    const question = questionInput.value.trim();
+
+    if (!question) {
+      return;
+    }
+
+    questionInput.disabled = true;
+    submitButton.disabled = true;
+
+    addMessage(question, 'user-message');
+    questionInput.value = '';
+
+    const thinkingContent = addMessage(
+      'AI is typing... <span class="spinner-border spinner-border-sm"></span>',
+      'ai-message'
+    );
+
+    const waitingTimer = setTimeout(() => {
+      showFlash('Still thinking... thanks for your patience!', 4000, 'info');
+    }, 5000);
+
+    try {
+      const res = await fetch('/answer-user-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }),
+      });
+
+      clearTimeout(waitingTimer);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      if (json.error) {
+        showFlash(json.message || 'An error occurred!', 3000, 'error');
+        thinkingContent.innerHTML = 'Error encountered.';
+        return;
+      }
+
+      if (!json.data?.answer) {
+        thinkingContent.innerHTML = 'No answer returned.';
+        return;
+      }
+
+      const answer = json.data.answer;
+
+      thinkingContent.innerHTML = '';
+
+      let i = 0;
+      const interval = setInterval(() => {
+        thinkingContent.innerText = answer.slice(0, i);
+        i++;
+
+        if (i > answer.length) {
+          clearInterval(interval);
+        }
+      }, 20);
+    } catch (err) {
+      clearTimeout(waitingTimer);
+      showFlash('Network error: ' + err.message, 3000, 'error');
+      thinkingContent.innerText = 'Error encountered.';
+    } finally {
+      questionInput.disabled = false;
+      submitButton.disabled = false;
+      questionInput.focus();
+    }
+  }
+
+  submitButton.onclick = sendQuestion;
+
+  questionInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+
+      if (!questionInput.disabled) {
+        sendQuestion();
+      }
+    }
+  });
+
+  window.onload = function () {
+    addMessage(
+      'Hi! I’m your NYC Capital Projects AI Agent 🤖. Ask me about any NYC capital projects!',
+      'ai-message'
+    );
+  };
+</script>
+
+{{end}}
