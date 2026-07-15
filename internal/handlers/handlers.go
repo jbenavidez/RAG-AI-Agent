@@ -13,7 +13,7 @@ type Handlers struct {
 	Renderer      *render.Renderer
 }
 
-func NewHandlers(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer) *Handlers {
+func New(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer) *Handlers {
 	return &Handlers{
 		uploadService: uploadService,
 		ragService:    ragService,

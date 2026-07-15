@@ -12,7 +12,7 @@ type Renderer struct {
 	App *config.AppConfig
 }
 
-func NewRenderer(app *config.AppConfig) *Renderer {
+func New(app *config.AppConfig) *Renderer {
 	return &Renderer{
 		App: app,
 	}

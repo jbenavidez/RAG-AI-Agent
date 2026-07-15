@@ -8,7 +8,7 @@ type Rag struct {
 	LLM llms.Model
 }
 
-func NewRag(llm llms.Model) *Rag {
+func New(llm llms.Model) *Rag {
 
 	return &Rag{
 		LLM: llm,
