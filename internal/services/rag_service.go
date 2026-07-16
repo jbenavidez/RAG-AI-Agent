@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"rag/internal/rag"
 	dbrepo "rag/internal/repository/db_repo"
 )
@@ -18,7 +17,7 @@ func NewRagService(r *rag.Rag, repo *dbrepo.WeaviateDBRepo) *RagService {
 	}
 }
 
-func (s *RagService) AskQuestion(ctx context.Context, question string) (string, error) {
+func (s *RagService) AskQuestion(question string) (string, error) {
 
-	return "nil", nil
+	return "hello from Agent", nil
 }

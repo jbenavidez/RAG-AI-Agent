@@ -29,6 +29,10 @@
   const submitButton = document.getElementById('submit');
   const flashMessage = document.getElementById('flash-message');
 
+  let socket = null;
+  let thinkingContent = null;
+  let waitingTimer = null;
+
   function showFlash(msg, duration = 3000, type = 'info') {
     flashMessage.innerText = msg;
     flashMessage.className = type === 'error' ? 'flash-error' : 'flash-info';
@@ -77,78 +81,136 @@
     return content;
   }
 
-  async function sendQuestion() {
+  function typeAnswer(contentElement, answer) {
+    contentElement.innerHTML = '';
+
+    let i = 0;
+
+    const interval = setInterval(() => {
+      contentElement.innerText = answer.slice(0, i);
+      i++;
+
+      if (i > answer.length) {
+        clearInterval(interval);
+      }
+    }, 20);
+  }
+
+  function enableInput() {
+    questionInput.disabled = false;
+    submitButton.disabled = false;
+    questionInput.focus();
+  }
+
+  function disableInput() {
+    questionInput.disabled = true;
+    submitButton.disabled = true;
+  }
+
+  function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    socket = new WebSocket(`${protocol}://${window.location.host}/chat`);
+
+    socket.onopen = function () {
+      showFlash('Connected to AI agent.', 2000, 'info');
+    };
+
+    socket.onmessage = function (event) {
+      if (waitingTimer) {
+        clearTimeout(waitingTimer);
+        waitingTimer = null;
+      }
+
+      let response;
+
+      try {
+        response = JSON.parse(event.data);
+      } catch (err) {
+        showFlash('Invalid response from server.', 3000, 'error');
+
+        if (thinkingContent) {
+          thinkingContent.innerText = 'Error encountered.';
+        }
+
+        enableInput();
+        return;
+      }
+
+      if (response.action === 'connected') {
+        showFlash(response.message || 'Connected to server.', 2000, 'info');
+        return;
+      }
+
+      if (response.action === 'error') {
+        showFlash(response.message || 'An error occurred.', 3000, 'error');
+
+        if (thinkingContent) {
+          thinkingContent.innerText = 'Error encountered.';
+        }
+
+        thinkingContent = null;
+        enableInput();
+        return;
+      }
+
+      const answer = response.message || 'No answer returned.';
+
+      if (thinkingContent) {
+        typeAnswer(thinkingContent, answer);
+        thinkingContent = null;
+      } else {
+        addMessage(answer, 'ai-message');
+      }
+
+      enableInput();
+    };
+
+    socket.onerror = function () {
+      showFlash('WebSocket error. Please refresh the page.', 3000, 'error');
+
+      if (thinkingContent) {
+        thinkingContent.innerText = 'Connection error.';
+      }
+
+      enableInput();
+    };
+
+    socket.onclose = function () {
+      showFlash('WebSocket connection closed.', 3000, 'error');
+      enableInput();
+    };
+  }
+
+  function sendQuestion() {
     const question = questionInput.value.trim();
 
     if (!question) {
       return;
     }
 
-    questionInput.disabled = true;
-    submitButton.disabled = true;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      showFlash('WebSocket is not connected yet. Please refresh the page.', 3000, 'error');
+      return;
+    }
+
+    disableInput();
 
     addMessage(question, 'user-message');
     questionInput.value = '';
 
-    const thinkingContent = addMessage(
+    thinkingContent = addMessage(
       'AI is typing... <span class="spinner-border spinner-border-sm"></span>',
       'ai-message'
     );
 
-    const waitingTimer = setTimeout(() => {
+    waitingTimer = setTimeout(() => {
       showFlash('Still thinking... thanks for your patience!', 4000, 'info');
     }, 5000);
 
-    try {
-      const res = await fetch('/answer-user-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question }),
-      });
-
-      clearTimeout(waitingTimer);
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const json = await res.json();
-
-      if (json.error) {
-        showFlash(json.message || 'An error occurred!', 3000, 'error');
-        thinkingContent.innerHTML = 'Error encountered.';
-        return;
-      }
-
-      if (!json.data?.answer) {
-        thinkingContent.innerHTML = 'No answer returned.';
-        return;
-      }
-
-      const answer = json.data.answer;
-
-      thinkingContent.innerHTML = '';
-
-      let i = 0;
-      const interval = setInterval(() => {
-        thinkingContent.innerText = answer.slice(0, i);
-        i++;
-
-        if (i > answer.length) {
-          clearInterval(interval);
-        }
-      }, 20);
-    } catch (err) {
-      clearTimeout(waitingTimer);
-      showFlash('Network error: ' + err.message, 3000, 'error');
-      thinkingContent.innerText = 'Error encountered.';
-    } finally {
-      questionInput.disabled = false;
-      submitButton.disabled = false;
-      questionInput.focus();
-    }
+    socket.send(JSON.stringify({
+      action: 'ask',
+      message: question
+    }));
   }
 
   submitButton.onclick = sendQuestion;
@@ -164,6 +226,8 @@
   });
 
   window.onload = function () {
+    connectWebSocket();
+
     addMessage(
       'Hi! I’m your NYC Capital Projects AI Agent 🤖. Ask me about any NYC capital projects!',
       'ai-message'

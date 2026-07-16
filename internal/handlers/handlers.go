@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"sync"
 
 	"rag/internal/render"
 	"rag/internal/services"
@@ -11,20 +14,127 @@ type Handlers struct {
 	uploadService *services.UploadService
 	ragService    *services.RagService
 	Renderer      *render.Renderer
+	wsChan        chan WsMessage
+	clients       map[*WebSocketConnection][]string
+	mu            sync.Mutex
 }
 
 func New(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer) *Handlers {
-	return &Handlers{
+	h := &Handlers{
 		uploadService: uploadService,
 		ragService:    ragService,
 		Renderer:      renderer,
+		wsChan:        make(chan WsMessage),
+		clients:       make(map[*WebSocketConnection][]string),
 	}
+	go h.ListenToWsChannel() // set go rutine to listen ws chan
+	return h
 }
 
 func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
 	if err := h.Renderer.Render(w, "home.html", nil); err != nil {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
+	}
+}
+
+func (h *Handlers) WsChat(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgradeConnection.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("unable to start ws", err)
+		return
+	}
+	//set ws res
+	var response WsJsonResponse
+	response.Message = `<em><small> connected to served</small></em>`
+	conn := &WebSocketConnection{Conn: ws}
+
+	err = ws.WriteJSON(response)
+	if err != nil {
+		log.Println(err)
+	}
+	//
+	log.Println("cconnected success ")
+
+	go h.ListenForWs(conn) // start go runtine to listen Ws
+
+}
+
+func (h *Handlers) ListenForWs(conn *WebSocketConnection) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Error", fmt.Sprintf("%v", r))
+		}
+	}()
+
+	var payload WsPayload
+	for {
+		err := conn.ReadJSON(&payload)
+		if err != nil {
+			log.Println("ws read err", err)
+			break
+		}
+		wsMessage := WsMessage{
+			Payload: &payload,
+			Conn:    conn,
+		}
+
+		fmt.Println("Sending  to channel", wsMessage)
+
+		h.wsChan <- wsMessage
+	}
+}
+
+func (h *Handlers) ListenToWsChannel() {
+	for e := range h.wsChan {
+		fmt.Println("listening for ws event")
+
+		switch e.Payload.Action {
+		case "ask":
+			answer, err := h.ragService.AskQuestion(e.Payload.Message)
+			if err != nil {
+				fmt.Println("unable to get answer from agent", err)
+				response := WsJsonResponse{
+					Action:  "error",
+					Message: "unable to get answer from agent",
+				}
+				h.BroadcastResponseToConn(e.Conn, response)
+				continue
+			}
+
+			h.mu.Lock()
+			h.clients[e.Conn] = append(h.clients[e.Conn], answer)
+			h.mu.Unlock()
+			response := WsJsonResponse{
+				Action:  "answer",
+				Message: answer,
+			}
+
+			fmt.Println("user question", e.Payload.Message)
+			h.BroadcastResponseToConn(e.Conn, response)
+
+		default:
+			response := WsJsonResponse{
+				Action:  "error",
+				Message: "unknown websocket action",
+			}
+
+			h.BroadcastResponseToConn(e.Conn, response)
+		}
+	}
+}
+
+func (h *Handlers) BroadcastResponseToConn(conn *WebSocketConnection, response WsJsonResponse) {
+
+	if conn == nil || conn.Conn == nil {
+		log.Println("nil websocket connection")
+		return
+	}
+
+	err := conn.WriteJSON(response)
+	if err != nil {
+		log.Println("WS err", err)
+		_ = conn.Close()
 	}
 }
 

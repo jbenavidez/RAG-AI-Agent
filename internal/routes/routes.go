@@ -15,6 +15,7 @@ func SetUpReoutes(h *handlers.Handlers) http.Handler {
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
 	mux.Get("/", h.Home)
+	mux.Get("/chat", h.WsChat)
 	mux.Get("/docs", h.GetAllUploadFiles)
 	mux.Get("/docs", h.GetAllUploadFiles)
 	mux.Get("/upload", h.UploadDoc)
