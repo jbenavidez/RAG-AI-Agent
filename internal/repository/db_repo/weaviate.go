@@ -275,6 +275,78 @@ func (m *WeaviateDBRepo) InsertDocuments(docs []*models.CapitalProject) error {
 	return nil
 }
 
+func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	nearText := m.DB.GraphQL().NearTextArgBuilder().WithConcepts([]string{question})
+	res, err := m.DB.GraphQL().Get().
+		WithClassName(DocumentClassName).
+		WithFields(
+			graphql.Field{Name: "text"},
+			graphql.Field{Name: "dateReported"},
+			graphql.Field{Name: "projectName"},
+			graphql.Field{Name: "description"},
+			graphql.Field{Name: "category"},
+			graphql.Field{Name: "borough"},
+			graphql.Field{Name: "managingAgency"},
+			graphql.Field{Name: "clientAgency"},
+			graphql.Field{Name: "currentPhase"},
+			graphql.Field{Name: "designStart"},
+			graphql.Field{Name: "budgetForecast"},
+			graphql.Field{Name: "latestBudgetChanges"},
+			graphql.Field{Name: "totalBudgetChanges"},
+			graphql.Field{Name: "forecastCompletion"},
+			graphql.Field{Name: "latestScheduleChanges"},
+			graphql.Field{Name: "totalScheduleChanges"},
+		).
+		WithNearText(nearText).
+		WithLimit(3).
+		Do(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var results []models.CapitalProject
+	getData, ok := res.Data["Get"].(map[string]interface{})
+	if !ok {
+		return results, nil
+	}
+
+	docs, ok := getData[DocumentClassName].([]interface{})
+	if !ok {
+		return results, nil
+	}
+
+	for _, doc := range docs {
+		d, ok := doc.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		results = append(results, models.CapitalProject{
+			Text:                  getStringProperty(d, "text"),
+			DateReported:          getStringProperty(d, "dateReported"),
+			ProjectName:           getStringProperty(d, "projectName"),
+			Description:           getStringProperty(d, "description"),
+			Category:              getStringProperty(d, "category"),
+			Borough:               getStringProperty(d, "borough"),
+			ManagingAgency:        getStringProperty(d, "managingAgency"),
+			ClientAgency:          getStringProperty(d, "clientAgency"),
+			CurrentPhase:          getStringProperty(d, "currentPhase"),
+			DesignStart:           getStringProperty(d, "designStart"),
+			BudgetForecast:        getStringProperty(d, "budgetForecast"),
+			LatestBudgetChanges:   getStringProperty(d, "latestBudgetChanges"),
+			TotalBudgetChanges:    getStringProperty(d, "totalBudgetChanges"),
+			ForecastCompletion:    getStringProperty(d, "forecastCompletion"),
+			LatestScheduleChanges: getStringProperty(d, "latestScheduleChanges"),
+			TotalScheduleChanges:  getStringProperty(d, "totalScheduleChanges"),
+		})
+	}
+
+	return results, nil
+}
+
 // HELPERS
 func getGraphQLID(props map[string]interface{}) string {
 	additional, ok := props["_additional"].(map[string]interface{})
