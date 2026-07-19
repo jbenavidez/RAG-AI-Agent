@@ -167,9 +167,9 @@ make up_build
 
 After resetting Weaviate, upload the CSV again from the web app.
 
-## Example Question
+## Example Questions 
 
-**Question:**
+**Question # 1:**
 
 List the project names along with their budget forecast and total budget changes for each interceptor sewer project.
 
@@ -178,3 +178,16 @@ List the project names along with their budget forecast and total budget changes
 The AI agent retrieves relevant NYC Capital Project records from Weaviate and generates a concise answer using the project names, budget forecasts, and total budget changes found in the retrieved data.
 
 <img width="720" height="806" alt="Screenshot 2026-07-19 at 1 27 27 PM" src="https://github.com/user-attachments/assets/9046b324-055d-439b-9530-17ee139ff240" />
+
+---
+
+### Question #2
+
+**Question:**
+
+What are the main objectives and expected benefits of the emergency technology infrastructure upgrade to improve public safety response times?
+
+**Answer:**
+
+The main objective of the emergency technology infrastructure upgrade is to enhance public safety response times by providing faster and more reliable communication systems, improved data analytics, and enhanced situational awareness. This helps emergency responders respond to incidents more quickly and effectively.
+ 
