@@ -69,7 +69,22 @@ func NewWeaviateClient() (*weaviate.Client, error) {
 			Description: "Collection of documents",
 			Vectorizer:  "text2vec-openai",
 			Properties: []*models.Property{
-				{Name: "body", DataType: schema.DataTypeText.PropString()},
+				{Name: "text", DataType: schema.DataTypeText.PropString()},
+				{Name: "dateReported", DataType: schema.DataTypeText.PropString()},
+				{Name: "projectName", DataType: schema.DataTypeText.PropString()},
+				{Name: "description", DataType: schema.DataTypeText.PropString()},
+				{Name: "category", DataType: schema.DataTypeText.PropString()},
+				{Name: "borough", DataType: schema.DataTypeText.PropString()},
+				{Name: "managingAgency", DataType: schema.DataTypeText.PropString()},
+				{Name: "clientAgency", DataType: schema.DataTypeText.PropString()},
+				{Name: "currentPhase", DataType: schema.DataTypeText.PropString()},
+				{Name: "designStart", DataType: schema.DataTypeText.PropString()},
+				{Name: "budgetForecast", DataType: schema.DataTypeText.PropString()},
+				{Name: "latestBudgetChanges", DataType: schema.DataTypeText.PropString()},
+				{Name: "totalBudgetChanges", DataType: schema.DataTypeText.PropString()},
+				{Name: "forecastCompletion", DataType: schema.DataTypeText.PropString()},
+				{Name: "latestScheduleChanges", DataType: schema.DataTypeText.PropString()},
+				{Name: "totalScheduleChanges", DataType: schema.DataTypeText.PropString()},
 			},
 		}
 

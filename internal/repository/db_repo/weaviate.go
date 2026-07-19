@@ -279,7 +279,10 @@ func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject,
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	nearText := m.DB.GraphQL().NearTextArgBuilder().WithConcepts([]string{question})
+	nearText := m.DB.GraphQL().
+		NearTextArgBuilder().
+		WithConcepts([]string{question})
+
 	res, err := m.DB.GraphQL().Get().
 		WithClassName(DocumentClassName).
 		WithFields(
@@ -301,22 +304,35 @@ func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject,
 			graphql.Field{Name: "totalScheduleChanges"},
 		).
 		WithNearText(nearText).
-		WithLimit(3).
+		WithLimit(20).
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to retrieve documents from weaviate: %w", err)
+	}
+
+	if len(res.Errors) > 0 {
+		for i, gqlErr := range res.Errors {
+			if gqlErr == nil {
+				continue
+			}
+
+			fmt.Printf("weaviate graphql error %d: %s\n", i, gqlErr.Message)
+		}
+
+		return nil, fmt.Errorf("weaviate graphql error: %s", res.Errors[0].Message)
 	}
 
 	var results []models.CapitalProject
+
 	getData, ok := res.Data["Get"].(map[string]interface{})
 	if !ok {
-		return results, nil
+		return results, fmt.Errorf("invalid weaviate response: missing Get data")
 	}
 
 	docs, ok := getData[DocumentClassName].([]interface{})
 	if !ok {
-		return results, nil
+		return results, fmt.Errorf("invalid weaviate response: missing %s documents", DocumentClassName)
 	}
 
 	for _, doc := range docs {
@@ -324,6 +340,7 @@ func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject,
 		if !ok {
 			continue
 		}
+
 		results = append(results, models.CapitalProject{
 			Text:                  getStringProperty(d, "text"),
 			DateReported:          getStringProperty(d, "dateReported"),
@@ -343,6 +360,8 @@ func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject,
 			TotalScheduleChanges:  getStringProperty(d, "totalScheduleChanges"),
 		})
 	}
+
+	fmt.Printf("retrieved documents from weaviate: %d\n", len(results))
 
 	return results, nil
 }

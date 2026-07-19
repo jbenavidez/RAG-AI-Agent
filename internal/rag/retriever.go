@@ -1,6 +1,7 @@
 package rag
 
 import (
+	"fmt"
 	"rag/internal/models"
 	"rag/internal/repository"
 )
@@ -16,5 +17,6 @@ func NewRetriever(repo repository.DatabaseRepo) *Retriever {
 }
 
 func (r *Retriever) GetRelevantDocuments(question string) ([]models.CapitalProject, error) {
+	fmt.Println("valinor_1")
 	return r.repo.GetDocuments(question)
 }

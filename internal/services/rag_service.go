@@ -25,9 +25,10 @@ func (s *RagService) AskQuestion(question string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("valinopr", len(docs))
 	if len(docs) == 0 {
 		return "I could not find any relevant project information for that question.", nil
 	}
-	fmt.Println("the docs", docs)
+
 	return "", nil
 }
