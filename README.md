@@ -1,4 +1,4 @@
-# RAG-AI-Agent (WIP)
+# RAG-AI-Agent
 
 A lightweight RAG AI agent that ingests data from the **NYC Capital Projects dataset** and answers user questions with relevant, context-aware responses grounded in the ingested data.
 
