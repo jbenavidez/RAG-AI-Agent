@@ -304,7 +304,7 @@ func (m *WeaviateDBRepo) GetDocuments(question string) ([]models.CapitalProject,
 			graphql.Field{Name: "totalScheduleChanges"},
 		).
 		WithNearText(nearText).
-		WithLimit(20).
+		WithLimit(3).
 		Do(ctx)
 
 	if err != nil {
