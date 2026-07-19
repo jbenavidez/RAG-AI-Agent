@@ -177,4 +177,4 @@ List the project names along with their budget forecast and total budget changes
 
 The AI agent retrieves relevant NYC Capital Project records from Weaviate and generates a concise answer using the project names, budget forecasts, and total budget changes found in the retrieved data.
 
- 
+<img width="720" height="806" alt="Screenshot 2026-07-19 at 1 27 27 PM" src="https://github.com/user-attachments/assets/9046b324-055d-439b-9530-17ee139ff240" />
