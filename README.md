@@ -7,8 +7,6 @@ The project includes a Go web application for uploading source files, indexing d
 ## Stack
 
 - **Go** — Core backend language for the web application, upload flow, WebSocket chat, and RAG orchestration
-- **Chi Router** — HTTP routing for pages, upload endpoints, static files, and WebSocket routes
-- **Gorilla WebSocket** — Real-time chat communication between the browser and the Go backend
 - **Weaviate** — Vector database used for storing and retrieving NYC Capital Project documents
 - **OpenAI Embeddings** — Used by Weaviate to vectorize project documents and user questions for semantic search
 - **Ollama** — Local LLM runtime used to run the language model
