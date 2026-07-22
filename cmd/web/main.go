@@ -39,6 +39,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// init redis
+	redisClient, err := db.NewRedisClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer redisClient.Close()
 	// init Ollama
 	llm, err := llm.NewOllamaClient()
 	if err != nil {
@@ -47,13 +53,14 @@ func main() {
 	//wire everything up
 	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
 	ragEngine := rag.New(llm)
+	memoryService := services.NewMemoryService(redisClient)
 	ragService := services.NewRagService(ragEngine, weaviateRepo)
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storage.NewLocalStorage(uploadDir)
 	uploadService := services.NewUploadService(weaviateRepo, fileStorage, chunksize)
 	defer uploadService.StopWorker()
 	renderer := render.New(&appConfig)
-	handlers := handlers.New(uploadService, ragService, renderer)
+	handlers := handlers.New(uploadService, ragService, renderer, memoryService)
 	mux := routes.SetUpReoutes(handlers)
 
 	// init server

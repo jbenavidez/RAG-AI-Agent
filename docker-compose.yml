@@ -12,6 +12,7 @@ services:
     environment:
       WEAVIATE_URL: http://weaviate:8080
       OLLAMA_URL: http://ollama-service:11434
+      REDIS_URL: redis://redis-service:6379
       UPLOAD_DIR: /app/uploads
       OPENAI_APIKEY: ${OPENAI_APIKEY}
     volumes:
@@ -19,6 +20,17 @@ services:
     depends_on:
       - weaviate
       - ollama-service
+      - redis-service
+
+  redis-service:
+    image: redis:7-alpine
+    container_name: redis-service
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    command: redis-server --appendonly yes
 
   ollama-service:
     image: ollama/ollama:latest

@@ -17,15 +17,17 @@ type Handlers struct {
 	wsChan        chan WsMessage
 	clients       map[*WebSocketConnection][]string
 	mu            sync.Mutex
+	MemoryService *services.MemoryService
 }
 
-func New(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer) *Handlers {
+func New(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer, memoryServices *services.MemoryService) *Handlers {
 	h := &Handlers{
 		uploadService: uploadService,
 		ragService:    ragService,
 		Renderer:      renderer,
 		wsChan:        make(chan WsMessage),
 		clients:       make(map[*WebSocketConnection][]string),
+		MemoryService: memoryServices,
 	}
 	go h.ListenToWsChannel() // set go rutine to listen ws chan
 	return h
