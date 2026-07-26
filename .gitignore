@@ -29,6 +29,7 @@ go.work.sum
 weaviate_data/
 weaviate_data_backup_*/
 ollama-data/
+redis-data/
 docker-data/
 
 # Local uploaded files

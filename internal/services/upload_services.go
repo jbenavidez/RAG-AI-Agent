@@ -15,20 +15,34 @@ import (
 	"sync"
 )
 
+type UploadJob struct {
+	UploadedFile *models.UploadedFile
+	SessionID    string
+}
+
+type UploadStatusEvent struct {
+	SessionID    string
+	UploadedFile *models.UploadedFile
+	Status       string
+	Message      string
+	ErrorMessage string
+}
 type UploadService struct {
-	repo         repository.DatabaseRepo
-	storage      storage.FileStorage
-	ch           chan *models.UploadedFile
-	wg           sync.WaitGroup
-	csvProcessor *processors.CSVProcessor
+	repo             repository.DatabaseRepo
+	storage          storage.FileStorage
+	uploadJobChan    chan *UploadJob
+	UploadStatusChan chan *UploadStatusEvent
+	wg               sync.WaitGroup
+	csvProcessor     *processors.CSVProcessor
 }
 
 func NewUploadService(r repository.DatabaseRepo, s storage.FileStorage, chunkSize int) *UploadService {
 	services := &UploadService{
-		repo:         r,
-		storage:      s,
-		ch:           make(chan *models.UploadedFile),
-		csvProcessor: processors.NewCSVProcessor(r, chunkSize),
+		repo:             r,
+		storage:          s,
+		uploadJobChan:    make(chan *UploadJob),
+		UploadStatusChan: make(chan *UploadStatusEvent),
+		csvProcessor:     processors.NewCSVProcessor(r, chunkSize),
 	}
 	services.StartWorker()
 	return services
@@ -41,15 +55,35 @@ func (s *UploadService) StartWorker() {
 }
 
 // processFileWorker processs uploaded file
+// processFileWorker processes uploaded files.
 func (s *UploadService) processFileWorker() {
 	defer s.wg.Done()
-	// wait for uploaded files to be added to the channel.
-	for uploadedFile := range s.ch {
-		if uploadedFile == nil {
+
+	// Wait for upload jobs to be added to the channel.
+	for uploadJob := range s.uploadJobChan {
+		if uploadJob == nil || uploadJob.UploadedFile == nil {
 			continue
 		}
-		if err := s.ProcessFile(context.Background(), uploadedFile); err != nil {
+		if err := s.ProcessFile(context.Background(), uploadJob.UploadedFile); err != nil {
 			fmt.Println("failed to process file:", err)
+			// Send failed event to notification chan.
+			s.UploadStatusChan <- &UploadStatusEvent{
+				SessionID:    uploadJob.SessionID,
+				UploadedFile: uploadJob.UploadedFile,
+				Status:       uploadJob.UploadedFile.Status,
+				Message:      "failed to process file",
+				ErrorMessage: err.Error(),
+			}
+
+			continue
+		}
+		// Send success event to notification chan.
+		s.UploadStatusChan <- &UploadStatusEvent{
+			SessionID:    uploadJob.SessionID,
+			UploadedFile: uploadJob.UploadedFile,
+			Status:       uploadJob.UploadedFile.Status,
+			Message:      "file processed successfully",
+			ErrorMessage: "",
 		}
 	}
 }
@@ -93,7 +127,7 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *models.Up
 	return nil
 }
 
-func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.File, header *multipart.FileHeader, description string) (*storage.StoredFile, error) {
+func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.File, header *multipart.FileHeader, description, sessionID string) (*storage.StoredFile, error) {
 	// Check if file already exists before saving it locally.
 	_, found, err := s.repo.GetFileByName(header.Filename)
 	if err != nil {
@@ -107,19 +141,25 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, file multipart.Fil
 	if err != nil {
 		return nil, err
 	}
-	// save failed on db
+	// Save file metadata in DB.
 	saveFiled, err := s.repo.SaveFileMetaData(storedFile)
 	if err != nil {
 		return nil, err
 	}
-	// send saved-file to chan
-	s.ch <- saveFiled
+	// set uploadJob file
+	uploadJob := &UploadJob{
+		UploadedFile: saveFiled,
+		SessionID:    sessionID,
+	}
+
+	// send upload-job to chan
+	s.uploadJobChan <- uploadJob
 
 	return storedFile, nil
 }
 
 func (s *UploadService) StopWorker() {
-	close(s.ch)
+	close(s.uploadJobChan)
 	s.wg.Wait()
 }
 

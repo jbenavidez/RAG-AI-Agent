@@ -55,3 +55,21 @@ func (m *MemoryService) Store(ctx context.Context, sessionID, question, answer s
 	return nil
 
 }
+
+func (m *MemoryService) GetChatsHistory(ctx context.Context, sessionID string) ([]Chat, error) {
+	key := fmt.Sprintf("chat:%s:messages", sessionID)
+	values, err := m.redisClient.LRange(ctx, key, 0, -1).Result()
+	if err != nil {
+		return nil, err
+	}
+	chatHistory := make([]Chat, len(values))
+	for i, v := range values {
+		var chat Chat
+		if err := json.Unmarshal([]byte(v), &chat); err != nil {
+			return nil, err
+		}
+		chatHistory[i] = chat
+	}
+
+	return chatHistory, nil
+}

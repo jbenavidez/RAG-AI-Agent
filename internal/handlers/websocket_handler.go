@@ -12,18 +12,20 @@ type WsPayload struct {
 }
 
 type WsMessage struct {
-	Payload *WsPayload           // the JSON payload
-	Conn    *WebSocketConnection // pointer to the live connection
+	Payload *WsPayload
+	Conn    *WebSocketConnection
 }
 
 type WsJsonResponse struct {
 	Action        string   `json:"action"`
 	Message       string   `json:"message"`
 	ConnectedUser []string `json:"connected_users"`
+	SessionID     string   `json:"session_id"`
 }
 
 type WebSocketConnection struct {
 	*websocket.Conn
+	SessionID string
 }
 
 var upgradeConnection = websocket.Upgrader{

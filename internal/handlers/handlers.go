@@ -1,35 +1,38 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
+	"rag/internal/middleware"
 	"rag/internal/render"
 	"rag/internal/services"
 )
 
 type Handlers struct {
-	uploadService *services.UploadService
-	ragService    *services.RagService
-	Renderer      *render.Renderer
-	wsChan        chan WsMessage
-	clients       map[*WebSocketConnection][]string
-	mu            sync.Mutex
-	MemoryService *services.MemoryService
+	uploadService   *services.UploadService
+	ragService      *services.RagService
+	Renderer        *render.Renderer
+	chatMessageChan chan WsMessage
+	clients         map[*WebSocketConnection][]string
+	mu              sync.Mutex
+	MemoryService   *services.MemoryService
 }
 
 func New(uploadService *services.UploadService, ragService *services.RagService, renderer *render.Renderer, memoryServices *services.MemoryService) *Handlers {
 	h := &Handlers{
-		uploadService: uploadService,
-		ragService:    ragService,
-		Renderer:      renderer,
-		wsChan:        make(chan WsMessage),
-		clients:       make(map[*WebSocketConnection][]string),
-		MemoryService: memoryServices,
+		uploadService:   uploadService,
+		ragService:      ragService,
+		Renderer:        renderer,
+		chatMessageChan: make(chan WsMessage),
+		clients:         make(map[*WebSocketConnection][]string),
+		MemoryService:   memoryServices,
 	}
-	go h.ListenToWsChannel() // set go rutine to listen ws chan
+	go h.ListenToWsChannel()           // set go rutine to listen ws chan
+	go h.ListenToUploadStatusChannel() // set go rutine to  upload status chan
 	return h
 }
 
@@ -40,26 +43,42 @@ func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handlers) WsChat(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) WebSocket(w http.ResponseWriter, r *http.Request) {
+	// Get SessionID from request context.
+	sessionID := middleware.GetSessionID(r)
+	if sessionID == "" {
+		http.Error(w, "missing session", http.StatusBadRequest)
+		return
+	}
 	ws, err := upgradeConnection.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("unable to start ws", err)
 		return
 	}
-	//set ws res
-	var response WsJsonResponse
-	response.Message = `<em><small> connected to served</small></em>`
-	conn := &WebSocketConnection{Conn: ws}
-
-	err = ws.WriteJSON(response)
-	if err != nil {
-		log.Println(err)
+	conn := &WebSocketConnection{
+		Conn:      ws,
+		SessionID: sessionID,
 	}
-	//
-	log.Println("cconnected success ")
+	// Register WebSocket connection immediately.
+	h.mu.Lock()
+	h.clients[conn] = []string{}
+	h.mu.Unlock()
 
-	go h.ListenForWs(conn) // start go runtine to listen Ws
+	response := WsJsonResponse{
+		Action:    "connected",
+		Message:   "Connected to server.",
+		SessionID: sessionID,
+	}
 
+	if err := ws.WriteJSON(response); err != nil {
+		log.Println(err)
+		_ = ws.Close()
+		return
+	}
+
+	log.Println("connected success")
+
+	go h.ListenForWs(conn)
 }
 
 func (h *Handlers) ListenForWs(conn *WebSocketConnection) {
@@ -83,17 +102,22 @@ func (h *Handlers) ListenForWs(conn *WebSocketConnection) {
 
 		fmt.Println("Sending  to channel", wsMessage)
 
-		h.wsChan <- wsMessage
+		h.chatMessageChan <- wsMessage
 	}
 }
 
 func (h *Handlers) ListenToWsChannel() {
-	for e := range h.wsChan {
-		fmt.Println("listening for ws event")
+	for e := range h.chatMessageChan {
+		fmt.Println("listening for chatMessageChan event")
 
 		switch e.Payload.Action {
 		case "ask":
-			answer, err := h.ragService.AskQuestion(e.Payload.Message)
+			chatHistory, err := h.MemoryService.GetChatsHistory(context.Background(), e.Conn.SessionID)
+			if err != nil {
+				fmt.Println("unable to get chat history", err)
+			}
+
+			answer, err := h.ragService.AskQuestion(e.Payload.Message, chatHistory)
 			if err != nil {
 				fmt.Println("unable to get answer from agent", err)
 				response := WsJsonResponse{
@@ -111,8 +135,10 @@ func (h *Handlers) ListenToWsChannel() {
 				Action:  "answer",
 				Message: answer,
 			}
-
-			fmt.Println("user question", e.Payload.Message)
+			// save chat turn
+			if err := h.MemoryService.Store(context.Background(), e.Conn.SessionID, e.Payload.Message, answer); err != nil {
+				fmt.Println("unable to save chat memory", err)
+			}
 			h.BroadcastResponseToConn(e.Conn, response)
 
 		default:
@@ -170,6 +196,13 @@ func (h *Handlers) ProcessDoc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get SessionID from cokoies
+	sessionID := middleware.GetSessionID(r)
+	if sessionID == "" {
+		http.Error(w, "missing session", http.StatusBadRequest)
+		return
+	}
+
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "missing uploaded file", http.StatusBadRequest)
@@ -181,11 +214,38 @@ func (h *Handlers) ProcessDoc(w http.ResponseWriter, r *http.Request) {
 
 	description := r.FormValue("description")
 
-	_, err = h.uploadService.SaveUploadedFile(r.Context(), file, header, description)
+	_, err = h.uploadService.SaveUploadedFile(r.Context(), file, header, description, sessionID)
 	if err != nil {
 		http.Error(w, "unable to save uploaded file", http.StatusInternalServerError)
 		return
 	}
 
 	http.Redirect(w, r, "/docs", http.StatusSeeOther)
+}
+
+func (h *Handlers) ListenToUploadStatusChannel() {
+	for event := range h.uploadService.UploadStatusChan {
+		if event == nil {
+			continue
+		}
+
+		response := WsJsonResponse{
+			Action:  "upload_status",
+			Message: event.Message,
+		}
+
+		h.SendUploadStatusToSession(event.SessionID, response)
+	}
+}
+
+func (h *Handlers) SendUploadStatusToSession(sessionID string, response WsJsonResponse) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	for conn := range h.clients {
+		if conn.SessionID == sessionID {
+			h.BroadcastResponseToConn(conn, response)
+			return
+		}
+	}
 }

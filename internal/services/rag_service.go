@@ -24,7 +24,7 @@ func NewRagService(r *rag.Rag, repo *dbrepo.WeaviateDBRepo) *RagService {
 	}
 }
 
-func (s *RagService) AskQuestion(question string) (string, error) {
+func (s *RagService) AskQuestion(question string, chatHistory []Chat) (string, error) {
 	//Get relevant documents from Weaviate.
 	docs, err := s.retriever.GetRelevantDocuments(question)
 	if err != nil {
@@ -35,7 +35,7 @@ func (s *RagService) AskQuestion(question string) (string, error) {
 		return "I could not find any relevant project information for that question.", nil
 	}
 	// genarate response
-	resp, err := s.GenerateAnswerFromSlides(context.Background(), question, docs)
+	resp, err := s.GenerateAnswerFromSlides(context.Background(), question, docs, chatHistory)
 	if err != nil {
 		return "", err
 	}
@@ -43,14 +43,27 @@ func (s *RagService) AskQuestion(question string) (string, error) {
 	return resp, nil
 }
 
-func (s *RagService) GenerateAnswerFromSlides(ctx context.Context, question string, slides []models.CapitalProject) (string, error) {
+func (s *RagService) FormatChatHistory(chatHistory []Chat) string {
+	if len(chatHistory) == 0 {
+		return ""
+	}
+	var history string
+	for _, chat := range chatHistory {
+		history += fmt.Sprintf("User: %s\n", chat.Question)
+		history += fmt.Sprintf("Assistant: %s\n\n", chat.Answer)
+	}
+	return history
+}
+func (s *RagService) GenerateAnswerFromSlides(ctx context.Context, question string, slides []models.CapitalProject, chatHistory []Chat) (string, error) {
 	// marshal slides
 	slidesJson, err := json.Marshal(slides)
 	if err != nil {
 		return "", err
 	}
+	// Format chatHistory
+	formmatedChatHistory := s.FormatChatHistory(chatHistory)
 	// Get promts
-	promts, err := rag.BuildRAGPrompt(slidesJson, question)
+	promts, err := rag.BuildRAGPrompt(slidesJson, question, formmatedChatHistory)
 	if err != nil {
 		log.Fatal(err)
 	}

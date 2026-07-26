@@ -60,11 +60,93 @@
         </div>
     </nav>
 
+    <div class="container mt-3">
+        <div id="global-flash-message" style="display: none;"></div>
+    </div>
+
     <main>
         {{template "content" .}}
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        window.appSocket = null;
+
+        function showGlobalFlash(message, duration = 3000, type = 'info') {
+            const flashMessage = document.getElementById('global-flash-message');
+
+            if (!flashMessage) {
+                return;
+            }
+
+            flashMessage.innerText = message;
+            flashMessage.className = type === 'error'
+                ? 'alert alert-danger alert-dismissible fade show'
+                : 'alert alert-info alert-dismissible fade show';
+
+            flashMessage.style.display = 'block';
+
+            setTimeout(() => {
+                flashMessage.style.display = 'none';
+            }, duration);
+        }
+
+        function sendAppSocketMessage(payload) {
+            if (!window.appSocket || window.appSocket.readyState !== WebSocket.OPEN) {
+                showGlobalFlash('WebSocket is not connected yet. Please refresh the page.', 3000, 'error');
+                return false;
+            }
+
+            window.appSocket.send(JSON.stringify(payload));
+            return true;
+        }
+
+        function connectAppWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+
+            window.appSocket = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+            window.appSocket.onopen = function () {
+                console.log('WebSocket connected');
+            };
+
+            window.appSocket.onmessage = function (event) {
+                let response;
+
+                try {
+                    response = JSON.parse(event.data);
+                } catch (err) {
+                    showGlobalFlash('Invalid response from server.', 3000, 'error');
+                    return;
+                }
+
+                window.dispatchEvent(new CustomEvent('app:websocket-message', {
+                    detail: response
+                }));
+
+                if (response.action === 'upload_status') {
+                    showGlobalFlash(response.message || 'Upload status updated.', 5000, 'info');
+                    return;
+                }
+
+                if (response.action === 'error') {
+                    showGlobalFlash(response.message || 'An error occurred.', 3000, 'error');
+                    return;
+                }
+            };
+
+            window.appSocket.onerror = function () {
+                showGlobalFlash('WebSocket error. Please refresh the page.', 3000, 'error');
+            };
+
+            window.appSocket.onclose = function () {
+                console.log('WebSocket connection closed');
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', connectAppWebSocket);
+    </script>
 </body>
 </html>
 {{end}}
