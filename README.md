@@ -271,6 +271,4 @@ The main objective of the emergency technology infrastructure upgrade is to enha
 
 <img width="646" height="752" alt="Screenshot 2026-07-19 at 1 31 35 PM" src="https://github.com/user-attachments/assets/4ce11266-fa0a-41d9-a221-d1139995326c" />
 
-## Status
 
-WIP
