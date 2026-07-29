@@ -54,7 +54,6 @@ func (s *UploadService) StartWorker() {
 	go s.processFileWorker()
 }
 
-// processFileWorker processs uploaded file
 // processFileWorker processes uploaded files.
 func (s *UploadService) processFileWorker() {
 	defer s.wg.Done()
